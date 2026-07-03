@@ -1,0 +1,52 @@
+rules_version = '2';
+
+// Deploy with: firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Admin membership is bootstrapped manually in the Firebase console —
+    // clients can only read their own doc (to check "am I an admin?"),
+    // never write one.
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Public storefront can only see published ("active") products.
+    // Admins can see and manage everything, including drafts.
+    match /products/{productId} {
+      allow read: if resource.data.status == "active" || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // No public checkout flow exists yet, so only admins can read/write
+    // orders. Once checkout is implemented, `create` should be opened up
+    // with strict field validation instead of isAdmin().
+    match /orders/{orderId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if isAdmin();
+    }
+
+    // Anyone can submit a contact message; only admins can read the inbox
+    // or change/delete a message afterwards.
+    match /messages/{messageId} {
+      allow create: if request.resource.data.status == "unread"
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.message is string;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Business settings are public (used to render site-wide info) but only
+    // admins can change them.
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
