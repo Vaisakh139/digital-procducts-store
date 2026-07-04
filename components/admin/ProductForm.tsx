@@ -7,17 +7,20 @@ import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "rea
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
+import { useToast } from "@/contexts/ToastContext";
 import {
   createProduct,
   generateProductId,
   updateProduct,
 } from "@/services/productService";
+import { deleteMultipleImages, uploadImage } from "@/services/cloudinaryService";
 import {
   PRODUCT_CATEGORIES,
   PRODUCT_STATUSES,
   type Product,
+  type ProductInput,
 } from "@/types/product";
-import ImageUploader from "./ImageUploader";
+import ImageUploader, { revokeSlot, type ImageSlot } from "./ImageUploader";
 import UploadField from "./UploadField";
 
 const productFormSchema = z.object({
@@ -30,8 +33,6 @@ const productFormSchema = z.object({
   longDescription: z.string().trim().optional(),
   price: z.number().positive("Price must be greater than 0."),
   category: z.enum(PRODUCT_CATEGORIES),
-  thumbnail: z.string().trim().optional(),
-  images: z.array(z.string()),
   videoUrl: z.union([
     z.string().trim().url("Enter a valid video URL."),
     z.literal(""),
@@ -64,8 +65,6 @@ function emptyValues(): ProductFormValues {
     longDescription: "",
     price: 0,
     category: PRODUCT_CATEGORIES[0],
-    thumbnail: "",
-    images: [],
     videoUrl: "",
     downloadFile: "",
     isFeatured: false,
@@ -74,6 +73,32 @@ function emptyValues(): ProductFormValues {
     requirementsText: "",
     whatsIncludedText: "",
   };
+}
+
+function withProgress(slot: ImageSlot, progress: number): ImageSlot {
+  return slot.kind === "pending" ? { ...slot, progress, error: null } : slot;
+}
+
+function withError(slot: ImageSlot, error: string): ImageSlot {
+  return slot.kind === "pending" ? { ...slot, error, progress: null } : slot;
+}
+
+function clearProgress(slot: ImageSlot): ImageSlot {
+  return slot.kind === "pending" ? { ...slot, progress: null, error: null } : slot;
+}
+
+function thumbnailToSlots(product: Product | null | undefined): ImageSlot[] {
+  if (!product?.thumbnail || !product.thumbnailPublicId) return [];
+  return [{ kind: "existing", url: product.thumbnail, publicId: product.thumbnailPublicId }];
+}
+
+function galleryToSlots(product: Product | null | undefined): ImageSlot[] {
+  if (!product) return [];
+  return product.galleryImages.map((url, index) => ({
+    kind: "existing" as const,
+    url,
+    publicId: product.galleryPublicIds[index] ?? "",
+  }));
 }
 
 interface ProductFormProps {
@@ -91,6 +116,9 @@ export default function ProductForm({
   const isEditMode = Boolean(product);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [thumbnailSlots, setThumbnailSlots] = useState<ImageSlot[]>([]);
+  const [gallerySlots, setGallerySlots] = useState<ImageSlot[]>([]);
+  const { showToast } = useToast();
 
   const productId = useMemo(
     () => product?.id ?? generateProductId(),
@@ -119,8 +147,6 @@ export default function ProductForm({
         longDescription: product.longDescription,
         price: product.price,
         category: product.category,
-        thumbnail: product.thumbnail,
-        images: product.images,
         videoUrl: product.videoUrl ?? "",
         downloadFile: product.downloadFile ?? "",
         isFeatured: product.isFeatured,
@@ -132,6 +158,9 @@ export default function ProductForm({
     } else {
       reset(emptyValues());
     }
+
+    setThumbnailSlots(thumbnailToSlots(product));
+    setGallerySlots(galleryToSlots(product));
     setFormError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, product]);
@@ -140,7 +169,7 @@ export default function ProductForm({
     if (!isOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") handleClose();
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -152,23 +181,98 @@ export default function ProductForm({
       document.body.style.overflow = "";
       window.clearTimeout(focusTimer);
     };
-  }, [isOpen, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
-  const thumbnail = watch("thumbnail");
-  const images = watch("images");
   const downloadFile = watch("downloadFile");
+
+  const handleClose = () => {
+    if (isSubmitting) return;
+    thumbnailSlots.forEach(revokeSlot);
+    gallerySlots.forEach(revokeSlot);
+    onClose();
+  };
 
   const onSubmit = async (values: ProductFormValues) => {
     setFormError(null);
+    const newlyUploadedPublicIds: string[] = [];
+    let firestoreWriteSucceeded = false;
+
     try {
-      const input = {
+      let thumbnailUrl = "";
+      let thumbnailPublicId: string | null = null;
+      const thumbSlot = thumbnailSlots[0];
+
+      if (thumbSlot?.kind === "existing") {
+        thumbnailUrl = thumbSlot.url;
+        thumbnailPublicId = thumbSlot.publicId;
+      } else if (thumbSlot?.kind === "pending") {
+        try {
+          const result = await uploadImage(thumbSlot.file, (percent) => {
+            setThumbnailSlots((prev) =>
+              prev.map((slot, index) => (index === 0 ? withProgress(slot, percent) : slot)),
+            );
+          });
+          thumbnailUrl = result.imageUrl;
+          thumbnailPublicId = result.publicId;
+          newlyUploadedPublicIds.push(result.publicId);
+          setThumbnailSlots((prev) =>
+            prev.map((slot, index) => (index === 0 ? clearProgress(slot) : slot)),
+          );
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "Failed to upload thumbnail.";
+          setThumbnailSlots((prev) =>
+            prev.map((slot, index) => (index === 0 ? withError(slot, message) : slot)),
+          );
+          throw new Error(message);
+        }
+      }
+
+      const galleryUrls: string[] = [];
+      const galleryPublicIdsResolved: string[] = [];
+
+      for (let index = 0; index < gallerySlots.length; index++) {
+        const slot = gallerySlots[index];
+
+        if (slot.kind === "existing") {
+          galleryUrls.push(slot.url);
+          galleryPublicIdsResolved.push(slot.publicId);
+          continue;
+        }
+
+        try {
+          const result = await uploadImage(slot.file, (percent) => {
+            setGallerySlots((prev) =>
+              prev.map((s, i) => (i === index ? withProgress(s, percent) : s)),
+            );
+          });
+          galleryUrls.push(result.imageUrl);
+          galleryPublicIdsResolved.push(result.publicId);
+          newlyUploadedPublicIds.push(result.publicId);
+          setGallerySlots((prev) =>
+            prev.map((s, i) => (i === index ? clearProgress(s) : s)),
+          );
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "Failed to upload image.";
+          setGallerySlots((prev) =>
+            prev.map((s, i) => (i === index ? withError(s, message) : s)),
+          );
+          throw new Error(message);
+        }
+      }
+
+      const input: ProductInput = {
         title: values.title,
         description: values.description,
         longDescription: values.longDescription || "",
         price: values.price,
         category: values.category,
-        thumbnail: values.thumbnail || "",
-        images: values.images,
+        thumbnail: thumbnailUrl,
+        thumbnailPublicId,
+        galleryImages: galleryUrls,
+        galleryPublicIds: galleryPublicIdsResolved,
         videoUrl: values.videoUrl || null,
         downloadFile: values.downloadFile || null,
         isFeatured: values.isFeatured,
@@ -178,14 +282,51 @@ export default function ProductForm({
         whatsIncluded: linesToArray(values.whatsIncludedText),
       };
 
-      if (isEditMode) {
-        await updateProduct(productId, input);
-      } else {
-        await createProduct(productId, input);
+      try {
+        if (isEditMode) {
+          await updateProduct(productId, input);
+        } else {
+          await createProduct(productId, input);
+        }
+        firestoreWriteSucceeded = true;
+      } catch {
+        throw new Error(
+          "Something went wrong while saving the product. Please try again.",
+        );
       }
+
+      if (isEditMode && product) {
+        const keptPublicIds = new Set([
+          ...(thumbnailPublicId ? [thumbnailPublicId] : []),
+          ...galleryPublicIdsResolved,
+        ]);
+        const originalPublicIds = [
+          ...(product.thumbnailPublicId ? [product.thumbnailPublicId] : []),
+          ...product.galleryPublicIds,
+        ];
+        const removedPublicIds = originalPublicIds.filter(
+          (id) => !keptPublicIds.has(id),
+        );
+        if (removedPublicIds.length > 0) {
+          await deleteMultipleImages(removedPublicIds);
+        }
+      }
+
+      showToast(
+        "success",
+        isEditMode ? "Product updated successfully." : "Product created successfully.",
+      );
+      thumbnailSlots.forEach(revokeSlot);
+      gallerySlots.forEach(revokeSlot);
       onClose();
-    } catch {
-      setFormError("Something went wrong while saving. Please try again.");
+    } catch (error) {
+      if (!firestoreWriteSucceeded && newlyUploadedPublicIds.length > 0) {
+        await deleteMultipleImages(newlyUploadedPublicIds);
+      }
+      const message =
+        error instanceof Error ? error.message : "Something went wrong. Please try again.";
+      setFormError(message);
+      showToast("error", message);
     }
   };
 
@@ -201,7 +342,7 @@ export default function ProductForm({
         >
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
+            onClick={handleClose}
             aria-hidden="true"
           />
 
@@ -222,9 +363,10 @@ export default function ProductForm({
               <button
                 ref={closeButtonRef}
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
+                disabled={isSubmitting}
                 aria-label="Close"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-foreground/50 transition-colors hover:bg-surface-muted hover:text-foreground"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-foreground/50 transition-colors hover:bg-surface-muted hover:text-foreground disabled:opacity-40"
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
@@ -241,6 +383,7 @@ export default function ProductForm({
                     <Field label="Title" error={errors.title?.message}>
                       <input
                         {...register("title")}
+                        disabled={isSubmitting}
                         className={inputClass}
                         placeholder="Premium Landing Page Kit"
                       />
@@ -252,6 +395,7 @@ export default function ProductForm({
                     >
                       <textarea
                         {...register("description")}
+                        disabled={isSubmitting}
                         rows={2}
                         className={inputClass}
                         placeholder="One or two sentences shown on the product card."
@@ -264,6 +408,7 @@ export default function ProductForm({
                     >
                       <textarea
                         {...register("longDescription")}
+                        disabled={isSubmitting}
                         rows={4}
                         className={inputClass}
                         placeholder="Full description shown in the product details modal."
@@ -276,12 +421,17 @@ export default function ProductForm({
                           type="number"
                           step="0.01"
                           min="0"
+                          disabled={isSubmitting}
                           {...register("price", { valueAsNumber: true })}
                           className={inputClass}
                         />
                       </Field>
                       <Field label="Category" error={errors.category?.message}>
-                        <select {...register("category")} className={inputClass}>
+                        <select
+                          {...register("category")}
+                          disabled={isSubmitting}
+                          className={inputClass}
+                        >
                           {PRODUCT_CATEGORIES.map((category) => (
                             <option key={category} value={category}>
                               {category}
@@ -297,6 +447,7 @@ export default function ProductForm({
                     >
                       <input
                         {...register("videoUrl")}
+                        disabled={isSubmitting}
                         className={inputClass}
                         placeholder="https://www.youtube.com/embed/..."
                       />
@@ -307,6 +458,7 @@ export default function ProductForm({
                       accept=".zip,.pdf"
                       storageFolder={`products/${productId}/download`}
                       value={downloadFile || null}
+                      disabled={isSubmitting}
                       onUploaded={(url) =>
                         setValue("downloadFile", url, { shouldValidate: true })
                       }
@@ -319,6 +471,7 @@ export default function ProductForm({
                       <Field label="Features (one per line)">
                         <textarea
                           {...register("featuresText")}
+                          disabled={isSubmitting}
                           rows={3}
                           className={inputClass}
                           placeholder={"Responsive layout\nDark mode support"}
@@ -327,6 +480,7 @@ export default function ProductForm({
                       <Field label="Requirements (one per line)">
                         <textarea
                           {...register("requirementsText")}
+                          disabled={isSubmitting}
                           rows={3}
                           className={inputClass}
                           placeholder={"Node.js 18+"}
@@ -337,6 +491,7 @@ export default function ProductForm({
                     <Field label="What's Included (one per line)">
                       <textarea
                         {...register("whatsIncludedText")}
+                        disabled={isSubmitting}
                         rows={3}
                         className={inputClass}
                         placeholder={"Source files\nDocumentation"}
@@ -347,6 +502,7 @@ export default function ProductForm({
                       <label className="flex items-center gap-2 text-sm font-medium">
                         <input
                           type="checkbox"
+                          disabled={isSubmitting}
                           {...register("isFeatured")}
                           className="h-4 w-4 rounded border-border-subtle accent-[color:var(--color-brand-500)]"
                         />
@@ -355,6 +511,7 @@ export default function ProductForm({
                       <Field label="Status" error={errors.status?.message}>
                         <select
                           {...register("status")}
+                          disabled={isSubmitting}
                           className={`${inputClass} w-40 capitalize`}
                         >
                           {PRODUCT_STATUSES.map((status) => (
@@ -370,15 +527,12 @@ export default function ProductForm({
                   <div className="flex flex-col gap-5">
                     <Field label="Thumbnail (optional)">
                       <ImageUploader
-                        storageFolder={`products/${productId}/thumbnail`}
-                        value={thumbnail || null}
-                        onUploaded={(url) =>
-                          setValue("thumbnail", url, { shouldValidate: true })
-                        }
-                        onRemove={() =>
-                          setValue("thumbnail", "", { shouldValidate: true })
-                        }
+                        mode="single"
                         aspect="video"
+                        slots={thumbnailSlots}
+                        onChange={setThumbnailSlots}
+                        disabled={isSubmitting}
+                        label="Upload thumbnail"
                       />
                     </Field>
 
@@ -386,32 +540,14 @@ export default function ProductForm({
                       <span className="text-sm font-medium text-foreground/80">
                         Gallery Images
                       </span>
-                      <div className="grid grid-cols-2 gap-3">
-                        {images.map((url, index) => (
-                          <ImageUploader
-                            key={`${url}-${index}`}
-                            storageFolder={`products/${productId}/images`}
-                            value={url}
-                            onUploaded={() => {}}
-                            onRemove={() =>
-                              setValue(
-                                "images",
-                                images.filter((_, i) => i !== index),
-                                { shouldValidate: true },
-                              )
-                            }
-                          />
-                        ))}
-                        <ImageUploader
-                          storageFolder={`products/${productId}/images`}
-                          value={null}
-                          onUploaded={(url) =>
-                            setValue("images", [...images, url], {
-                              shouldValidate: true,
-                            })
-                          }
-                        />
-                      </div>
+                      <ImageUploader
+                        mode="multiple"
+                        aspect="square"
+                        slots={gallerySlots}
+                        onChange={setGallerySlots}
+                        disabled={isSubmitting}
+                        label="Add images"
+                      />
                     </div>
                   </div>
                 </div>
@@ -426,8 +562,9 @@ export default function ProductForm({
               <div className="flex items-center justify-end gap-3 border-t border-border-subtle px-6 py-4">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="h-10 rounded-full border border-border-subtle px-5 text-sm font-medium transition-colors hover:bg-surface-muted"
+                  onClick={handleClose}
+                  disabled={isSubmitting}
+                  className="h-10 rounded-full border border-border-subtle px-5 text-sm font-medium transition-colors hover:bg-surface-muted disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -448,7 +585,7 @@ export default function ProductForm({
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-subtle bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30";
+  "w-full rounded-xl border border-border-subtle bg-background px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 disabled:opacity-60";
 
 function Field({
   label,

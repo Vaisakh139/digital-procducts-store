@@ -10,8 +10,10 @@ import {
   Star,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Button from "@/components/ui/Button";
+import { getOptimizedImageUrl } from "@/lib/cloudinaryUrl";
 import type { Product } from "@/types/product";
 
 interface ProductDetailsModalProps {
@@ -44,7 +46,7 @@ export default function ProductDetailsModal({
 
   const gallery = useMemo(() => {
     if (!product) return [];
-    return [product.thumbnail, ...product.images].filter(Boolean);
+    return [product.thumbnail, ...product.galleryImages].filter(Boolean);
   }, [product]);
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export default function ProductDetailsModal({
             <div className="overflow-y-auto">
               <div className="grid grid-cols-1 gap-8 p-6 lg:grid-cols-2 lg:p-8">
                 <div className="flex flex-col gap-3">
-                  <div className="aspect-video w-full overflow-hidden rounded-2xl bg-surface-muted">
+                  <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-surface-muted">
                     {activeMedia.type === "video" && product.videoUrl ? (
                       <iframe
                         src={product.videoUrl}
@@ -117,15 +119,17 @@ export default function ProductDetailsModal({
                         allowFullScreen
                       />
                     ) : gallery.length > 0 ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={
+                      <Image
+                        src={getOptimizedImageUrl(
                           gallery[
                             activeMedia.type === "image" ? activeMedia.index : 0
-                          ]
-                        }
+                          ],
+                          { width: 1000 },
+                        )}
                         alt={product.title}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="(min-width: 1024px) 50vw, 100vw"
+                        className="object-cover"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-foreground/30">
@@ -148,12 +152,17 @@ export default function ProductDetailsModal({
                               : "border-transparent"
                           }`}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={image}
+                          <Image
+                            src={getOptimizedImageUrl(image, {
+                              width: 200,
+                              height: 150,
+                              crop: "fill",
+                            })}
                             alt=""
                             aria-hidden="true"
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="96px"
+                            className="object-cover"
                           />
                         </button>
                       ))}

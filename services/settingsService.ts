@@ -27,6 +27,8 @@ function parseSettings(
         ? data.supportEmail
         : DEFAULT_BUSINESS_SETTINGS.supportEmail,
     logoUrl: typeof data.logoUrl === "string" ? data.logoUrl : null,
+    logoPublicId:
+      typeof data.logoPublicId === "string" ? data.logoPublicId : null,
     socialLinks: {
       twitter: typeof social.twitter === "string" ? social.twitter : "",
       facebook: typeof social.facebook === "string" ? social.facebook : "",

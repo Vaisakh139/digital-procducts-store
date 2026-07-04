@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Check, Eye, Heart, ShoppingCart, Star } from "lucide-react";
+import Image from "next/image";
+import { getOptimizedImageUrl } from "@/lib/cloudinaryUrl";
 import type { Product } from "@/types/product";
 
 interface ProductCardProps {
@@ -63,12 +65,12 @@ export default function ProductCard({
     >
       <div className="relative aspect-video w-full overflow-hidden bg-surface-muted">
         {product.thumbnail ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={product.thumbnail}
+          <Image
+            src={getOptimizedImageUrl(product.thumbnail, { width: 640 })}
             alt={product.title}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-foreground/30">

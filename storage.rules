@@ -2,17 +2,16 @@ rules_version = '2';
 
 // Deploy with: firebase deploy --only storage
 //
+// Firebase Storage is only used for downloadable digital product files
+// (ZIP/PDF) — all product images and the business logo live in Cloudinary
+// instead (see lib/cloudinary.ts and services/cloudinaryService.ts).
+//
 // Every authenticated user in this app is an approved admin (there is no
 // separate customer-auth system), so `request.auth != null` is an effective
 // admin-only write gate without needing a cross-service Firestore lookup.
 service firebase.storage {
   match /b/{bucket}/o {
-    match /products/{productId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
-    match /settings/{allPaths=**} {
+    match /products/{productId}/download/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null;
     }

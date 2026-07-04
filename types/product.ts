@@ -21,9 +21,16 @@ export interface Product {
   longDescription: string;
   category: ProductCategory;
   price: number;
+  /** Cloudinary secure_url for the thumbnail, or "" if none uploaded. */
   thumbnail: string;
-  images: string[];
+  /** Cloudinary public_id for the thumbnail, or null if none uploaded. */
+  thumbnailPublicId: string | null;
+  /** Cloudinary secure_urls for gallery images, in display order. */
+  galleryImages: string[];
+  /** Cloudinary public_ids for gallery images — same order as galleryImages. */
+  galleryPublicIds: string[];
   videoUrl: string | null;
+  /** Firebase Storage download URL for the digital download file (ZIP/PDF). */
   downloadFile: string | null;
   rating: number;
   downloads: number;

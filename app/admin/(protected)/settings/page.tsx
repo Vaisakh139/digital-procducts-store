@@ -1,20 +1,22 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ImagePlus, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useForm, type UseFormRegister } from "react-hook-form";
 import { z } from "zod";
-import ImageUploader from "@/components/admin/ImageUploader";
+import ImagePreview from "@/components/admin/ImagePreview";
 import Button from "@/components/ui/Button";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useSettings } from "@/hooks/useSettings";
+import { deleteImage, uploadImage, validateImageFile } from "@/services/cloudinaryService";
 import { updateSettings } from "@/services/settingsService";
 
 const settingsSchema = z.object({
   businessName: z.string().trim().min(2, "Business name is required."),
   supportEmail: z.string().trim().email("Enter a valid email address."),
   logoUrl: z.string().optional(),
+  logoPublicId: z.string().optional(),
   twitter: z.string().trim().optional(),
   facebook: z.string().trim().optional(),
   instagram: z.string().trim().optional(),
@@ -29,6 +31,9 @@ export default function AdminSettingsPage() {
   const { settings, loading } = useSettings();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [logoProgress, setLogoProgress] = useState<number | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -43,6 +48,7 @@ export default function AdminSettingsPage() {
       businessName: settings.businessName,
       supportEmail: settings.supportEmail,
       logoUrl: settings.logoUrl ?? "",
+      logoPublicId: settings.logoPublicId ?? "",
       twitter: settings.socialLinks.twitter,
       facebook: settings.socialLinks.facebook,
       instagram: settings.socialLinks.instagram,
@@ -57,6 +63,7 @@ export default function AdminSettingsPage() {
       businessName: settings.businessName,
       supportEmail: settings.supportEmail,
       logoUrl: settings.logoUrl ?? "",
+      logoPublicId: settings.logoPublicId ?? "",
       twitter: settings.socialLinks.twitter,
       facebook: settings.socialLinks.facebook,
       instagram: settings.socialLinks.instagram,
@@ -67,6 +74,44 @@ export default function AdminSettingsPage() {
   }, [loading, settings]);
 
   const logoUrl = watch("logoUrl");
+  const logoPublicId = watch("logoPublicId");
+
+  const handleLogoFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setLogoError(validationError);
+      return;
+    }
+
+    setLogoError(null);
+    setLogoProgress(0);
+    const previousPublicId = logoPublicId;
+
+    try {
+      const result = await uploadImage(file, setLogoProgress);
+      setValue("logoUrl", result.imageUrl, { shouldValidate: true });
+      setValue("logoPublicId", result.publicId, { shouldValidate: true });
+      if (previousPublicId) {
+        deleteImage(previousPublicId).catch(() => {});
+      }
+    } catch (error) {
+      setLogoError(error instanceof Error ? error.message : "Failed to upload logo.");
+    } finally {
+      setLogoProgress(null);
+    }
+  };
+
+  const handleLogoRemove = () => {
+    if (logoPublicId) {
+      deleteImage(logoPublicId).catch(() => {});
+    }
+    setValue("logoUrl", "", { shouldValidate: true });
+    setValue("logoPublicId", "", { shouldValidate: true });
+  };
 
   const onSubmit = async (values: SettingsValues) => {
     setFormError(null);
@@ -76,6 +121,7 @@ export default function AdminSettingsPage() {
         businessName: values.businessName,
         supportEmail: values.supportEmail,
         logoUrl: values.logoUrl || null,
+        logoPublicId: values.logoPublicId || null,
         socialLinks: {
           twitter: values.twitter ?? "",
           facebook: values.facebook ?? "",
@@ -149,14 +195,46 @@ export default function AdminSettingsPage() {
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium text-foreground/80">Logo</span>
           <div className="w-40">
-            <ImageUploader
-              storageFolder="settings/logo"
-              value={logoUrl || null}
-              onUploaded={(url) => setValue("logoUrl", url, { shouldValidate: true })}
-              onRemove={() => setValue("logoUrl", "", { shouldValidate: true })}
-              aspect="square"
-            />
+            {logoUrl ? (
+              <ImagePreview
+                src={logoUrl}
+                aspect="square"
+                progress={logoProgress}
+                error={logoError}
+                onRemove={handleLogoRemove}
+                onReplace={() => logoInputRef.current?.click()}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={logoProgress !== null}
+                className="flex aspect-square w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border-subtle bg-surface text-foreground/50 transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-60 dark:hover:text-brand-400"
+              >
+                {logoProgress !== null ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                    <span className="text-xs">{Math.round(logoProgress)}%</span>
+                  </>
+                ) : (
+                  <>
+                    <ImagePlus className="h-6 w-6" aria-hidden="true" />
+                    <span className="text-xs">Upload logo</span>
+                  </>
+                )}
+              </button>
+            )}
+            {logoError && !logoUrl ? (
+              <p className="mt-1 text-xs text-red-500">{logoError}</p>
+            ) : null}
           </div>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleLogoFileChange}
+          />
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

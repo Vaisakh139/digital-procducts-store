@@ -17,8 +17,8 @@ import {
   type QueryDocumentSnapshot,
   type SnapshotOptions,
 } from "firebase/firestore";
-import { getDownloadURL, ref } from "firebase/storage";
-import { db, storage } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
+import { deleteMultipleImages } from "@/services/cloudinaryService";
 import { deleteFileByRef } from "@/services/storageService";
 import type { Product, ProductCategory, ProductInput, ProductStatus } from "@/types/product";
 
@@ -56,7 +56,10 @@ const productConverter: FirestoreDataConverter<Product> = {
       category: (data.category as ProductCategory) ?? "Templates",
       price: typeof data.price === "number" ? data.price : 0,
       thumbnail: typeof data.thumbnail === "string" ? data.thumbnail : "",
-      images: toStringArray(data.images),
+      thumbnailPublicId:
+        typeof data.thumbnailPublicId === "string" ? data.thumbnailPublicId : null,
+      galleryImages: toStringArray(data.galleryImages),
+      galleryPublicIds: toStringArray(data.galleryPublicIds),
       videoUrl: typeof data.videoUrl === "string" ? data.videoUrl : null,
       downloadFile:
         typeof data.downloadFile === "string" ? data.downloadFile : null,
@@ -77,35 +80,11 @@ const productsRef = collection(db, PRODUCTS_COLLECTION).withConverter(
   productConverter,
 );
 
-/**
- * Resolves an image reference to a usable URL. Firestore documents may store
- * either a fully-qualified download URL or a raw Firebase Storage path -
- * paths are resolved through the Storage SDK.
- */
-async function resolveImageUrl(path: string): Promise<string> {
-  if (!path) return "";
-  if (/^(https?:)?\/\//.test(path) || path.startsWith("data:")) return path;
-  try {
-    return await getDownloadURL(ref(storage, path));
-  } catch {
-    return path;
-  }
-}
-
-async function hydrateProductImages(product: Product): Promise<Product> {
-  const [thumbnail, images] = await Promise.all([
-    resolveImageUrl(product.thumbnail),
-    Promise.all(product.images.map(resolveImageUrl)),
-  ]);
-  return { ...product, thumbnail, images };
-}
-
-async function hydrateAll(products: Product[]): Promise<Product[]> {
-  return Promise.all(products.map(hydrateProductImages));
-}
-
 // ---------------------------------------------------------------------------
-// Public storefront reads — published ("active") products only.
+// Public storefront reads — published ("active") products only. Product
+// images always come back from Firestore as full Cloudinary secure_urls, so
+// no URL resolution/hydration step is needed (unlike the old Firebase
+// Storage-backed images, which sometimes stored bare paths).
 // ---------------------------------------------------------------------------
 
 export async function fetchProducts(): Promise<Product[]> {
@@ -115,7 +94,7 @@ export async function fetchProducts(): Promise<Product[]> {
     orderBy("createdAt", "desc"),
   );
   const snapshot = await getDocs(productsQuery);
-  return hydrateAll(snapshot.docs.map((docSnapshot) => docSnapshot.data()));
+  return snapshot.docs.map((docSnapshot) => docSnapshot.data());
 }
 
 export function subscribeToProducts(
@@ -130,21 +109,14 @@ export function subscribeToProducts(
 
   return onSnapshot(
     productsQuery,
-    (snapshot) => {
-      hydrateAll(snapshot.docs.map((docSnapshot) => docSnapshot.data()))
-        .then(onData)
-        .catch((error: unknown) => {
-          onError(error instanceof Error ? error : new Error(String(error)));
-        });
-    },
+    (snapshot) => onData(snapshot.docs.map((docSnapshot) => docSnapshot.data())),
     (error) => onError(error),
   );
 }
 
 export async function fetchProductById(id: string): Promise<Product | null> {
   const snapshot = await getDoc(doc(productsRef, id));
-  if (!snapshot.exists()) return null;
-  return hydrateProductImages(snapshot.data());
+  return snapshot.exists() ? snapshot.data() : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -159,13 +131,7 @@ export function subscribeToAllProductsAdmin(
 
   return onSnapshot(
     productsQuery,
-    (snapshot) => {
-      hydrateAll(snapshot.docs.map((docSnapshot) => docSnapshot.data()))
-        .then(onData)
-        .catch((error: unknown) => {
-          onError(error instanceof Error ? error : new Error(String(error)));
-        });
-    },
+    (snapshot) => onData(snapshot.docs.map((docSnapshot) => docSnapshot.data())),
     (error) => onError(error),
   );
 }
@@ -202,12 +168,22 @@ export async function updateProduct(
   });
 }
 
+/**
+ * Deletes a product's Cloudinary images (thumbnail + gallery) and its
+ * Firebase Storage download file first, then removes the Firestore document.
+ */
 export async function deleteProduct(product: Product): Promise<void> {
-  await deleteDoc(doc(db, PRODUCTS_COLLECTION, product.id));
+  const publicIdsToDelete = [
+    ...(product.thumbnailPublicId ? [product.thumbnailPublicId] : []),
+    ...product.galleryPublicIds,
+  ];
 
   await Promise.all([
-    deleteFileByRef(product.thumbnail),
-    ...product.images.map(deleteFileByRef),
-    product.downloadFile ? deleteFileByRef(product.downloadFile) : null,
+    publicIdsToDelete.length > 0
+      ? deleteMultipleImages(publicIdsToDelete)
+      : Promise.resolve(),
+    product.downloadFile ? deleteFileByRef(product.downloadFile) : Promise.resolve(),
   ]);
+
+  await deleteDoc(doc(db, PRODUCTS_COLLECTION, product.id));
 }
