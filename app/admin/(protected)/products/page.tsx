@@ -79,7 +79,7 @@ export default function AdminProductsPage() {
         <div className="flex flex-col">
           <span className="font-medium">{product.title}</span>
           {product.isFeatured ? (
-            <span className="text-xs text-brand-600 dark:text-brand-400">
+            <span className="text-xs text-brand-600">
               Featured
             </span>
           ) : null}
@@ -157,7 +157,7 @@ export default function AdminProductsPage() {
       </div>
 
       {error ? (
-        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600">
           {error}
         </p>
       ) : null}

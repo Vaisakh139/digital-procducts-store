@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
           action={
             <Link
               href="/admin/orders"
-              className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+              className="text-sm font-medium text-brand-600 hover:underline"
             >
               View all
             </Link>
@@ -117,7 +117,7 @@ export default function AdminDashboardPage() {
           action={
             <Link
               href="/admin/messages"
-              className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+              className="text-sm font-medium text-brand-600 hover:underline"
             >
               View all
             </Link>

@@ -4,8 +4,8 @@ import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 
 export const metadata: Metadata = {
-  title: "Admin — Digiora",
-  description: "Digiora admin dashboard.",
+  title: "Admin — Elicso",
+  description: "Elicso admin dashboard.",
   robots: { index: false, follow: false },
 };
 

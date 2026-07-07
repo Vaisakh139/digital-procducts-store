@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import {
   Gem,
-  KeyRound,
+  Hammer,
   LifeBuoy,
   Rocket,
   ShieldCheck,
@@ -21,15 +21,15 @@ interface Reason {
 const REASONS: Reason[] = [
   {
     icon: Gem,
-    title: "Premium Digital Products",
+    title: "Built to solve one frustration",
     description:
-      "A curated catalog of high-quality templates, kits, and assets — nothing generic.",
+      "Every tool exists because a generic template or app didn't cut it — for us, or for someone who asked.",
   },
   {
-    icon: KeyRound,
-    title: "Secure OTP Verification",
+    icon: Hammer,
+    title: "Made to be used, not admired",
     description:
-      "Every account is protected with one-time password verification at sign up.",
+      "No 47-tab template you'll never finish setting up. Open it, plug in your numbers, done.",
   },
   {
     icon: Rocket,
@@ -45,15 +45,15 @@ const REASONS: Reason[] = [
   },
   {
     icon: LifeBuoy,
-    title: "Professional Support",
+    title: "Real replies",
     description:
-      "A dedicated team ready to help before, during, and after every purchase.",
+      "Questions go to a real inbox, not a support ticket queue.",
   },
   {
     icon: Wallet,
-    title: "Money Safe Checkout",
+    title: "Buy once, keep forever",
     description:
-      "Transparent pricing and a secure checkout flow with no hidden charges.",
+      "No subscriptions, no recurring fees. Pay once and the file is yours for good.",
   },
 ];
 
@@ -72,9 +72,9 @@ export default function WhyChooseUs() {
     <section id="about" className="scroll-mt-20 bg-background py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <SectionHeading
-          eyebrow="Why choose us"
-          title="Built for buyers who expect more"
-          description="We combine premium curation with airtight security so every purchase feels effortless."
+          eyebrow="About Elicso"
+          title="Built by people who got frustrated first"
+          description="We make the tool we wished existed — then make it available in case you're stuck on the same problem."
         />
 
         <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -89,11 +89,11 @@ export default function WhyChooseUs() {
                 whileInView="show"
                 viewport={{ once: true, margin: "-60px" }}
                 whileHover={{ y: -6 }}
-                className="flex flex-col items-center gap-4 rounded-2xl border border-border-subtle bg-surface p-8 text-center shadow-sm transition-shadow hover:shadow-xl hover:shadow-brand-500/10"
+                className="flex flex-col items-center gap-4 rounded-2xl border border-border-subtle bg-surface p-8 text-center shadow-sm transition-shadow hover:shadow-xl hover:shadow-coral/10"
               >
-                <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-50 to-accent-400/10 ring-1 ring-brand-500/20">
+                <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 ring-1 ring-coral/20">
                   <Icon
-                    className="h-6 w-6 text-brand-600 dark:text-brand-400"
+                    className="h-6 w-6 text-coral-dark"
                     aria-hidden="true"
                   />
                 </span>

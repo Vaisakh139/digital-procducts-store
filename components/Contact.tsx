@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock, Mail, MapPin, Phone, Send, CheckCircle2 } from "lucide-react";
+import { Clock, Mail, Send, CheckCircle2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { submitMessage } from "@/services/messageService";
 import Button from "./ui/Button";
@@ -18,18 +18,8 @@ type FormErrors = Partial<Record<keyof FormValues, string>>;
 const INITIAL_VALUES: FormValues = { name: "", email: "", message: "" };
 
 const CONTACT_DETAILS = [
-  { icon: Mail, label: "Email", value: "support@digiora.com" },
-  { icon: Phone, label: "Phone", value: "+1 (555) 012-3456" },
-  {
-    icon: MapPin,
-    label: "Address",
-    value: "148 Market Street, San Francisco, CA 94105",
-  },
-  {
-    icon: Clock,
-    label: "Business Hours",
-    value: "Mon – Fri, 9:00 AM – 6:00 PM (PST)",
-  },
+  { icon: Mail, label: "Email", value: "hello@elicso.com" },
+  { icon: Clock, label: "Response time", value: "Usually within 24 hours." },
 ];
 
 function validate(values: FormValues): FormErrors {
@@ -88,12 +78,15 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="scroll-mt-20 bg-surface-muted py-24 sm:py-32">
+    <section
+      id="contact"
+      className="scroll-mt-20 bg-surface-muted py-24 sm:py-32"
+    >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <SectionHeading
           eyebrow="Get in touch"
           title="We'd love to hear from you"
-          description="Questions about a product, an order, or a partnership? Send us a message."
+          description="Questions about a tracker, a custom request, or something not working? Send us a message."
         />
 
         <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-12">
@@ -107,7 +100,10 @@ export default function Contact() {
             className="flex flex-col gap-5 rounded-2xl border border-border-subtle bg-surface p-8 shadow-sm lg:col-span-3"
           >
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="contact-name" className="text-sm font-medium text-foreground/80">
+              <label
+                htmlFor="contact-name"
+                className="text-sm font-medium text-foreground/80"
+              >
                 Name
               </label>
               <input
@@ -117,9 +113,11 @@ export default function Contact() {
                 value={values.name}
                 onChange={(event) => handleChange("name", event.target.value)}
                 aria-invalid={Boolean(errors.name)}
-                aria-describedby={errors.name ? "contact-name-error" : undefined}
+                aria-describedby={
+                  errors.name ? "contact-name-error" : undefined
+                }
                 placeholder="Jane Doe"
-                className="w-full rounded-xl border border-border-subtle bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
+                className="w-full rounded-xl border border-border-subtle bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-coral focus:ring-2 focus:ring-coral/30"
               />
               {errors.name ? (
                 <p id="contact-name-error" className="text-xs text-red-500">
@@ -129,7 +127,10 @@ export default function Contact() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="contact-email" className="text-sm font-medium text-foreground/80">
+              <label
+                htmlFor="contact-email"
+                className="text-sm font-medium text-foreground/80"
+              >
                 Email
               </label>
               <input
@@ -139,9 +140,11 @@ export default function Contact() {
                 value={values.email}
                 onChange={(event) => handleChange("email", event.target.value)}
                 aria-invalid={Boolean(errors.email)}
-                aria-describedby={errors.email ? "contact-email-error" : undefined}
+                aria-describedby={
+                  errors.email ? "contact-email-error" : undefined
+                }
                 placeholder="you@company.com"
-                className="w-full rounded-xl border border-border-subtle bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
+                className="w-full rounded-xl border border-border-subtle bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-coral focus:ring-2 focus:ring-coral/30"
               />
               {errors.email ? (
                 <p id="contact-email-error" className="text-xs text-red-500">
@@ -151,7 +154,10 @@ export default function Contact() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="contact-message" className="text-sm font-medium text-foreground/80">
+              <label
+                htmlFor="contact-message"
+                className="text-sm font-medium text-foreground/80"
+              >
                 Message
               </label>
               <textarea
@@ -159,11 +165,15 @@ export default function Contact() {
                 name="message"
                 rows={5}
                 value={values.message}
-                onChange={(event) => handleChange("message", event.target.value)}
+                onChange={(event) =>
+                  handleChange("message", event.target.value)
+                }
                 aria-invalid={Boolean(errors.message)}
-                aria-describedby={errors.message ? "contact-message-error" : undefined}
+                aria-describedby={
+                  errors.message ? "contact-message-error" : undefined
+                }
                 placeholder="Tell us how we can help..."
-                className="w-full resize-none rounded-xl border border-border-subtle bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
+                className="w-full resize-none rounded-xl border border-border-subtle bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-coral focus:ring-2 focus:ring-coral/30"
               />
               {errors.message ? (
                 <p id="contact-message-error" className="text-xs text-red-500">
@@ -192,10 +202,11 @@ export default function Contact() {
             {isSubmitted ? (
               <p
                 role="status"
-                className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-600 dark:text-emerald-400"
+                className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-600"
               >
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                Thanks! Your message has been sent — we&apos;ll be in touch soon.
+                Thanks! Your message has been sent — we&apos;ll be in touch
+                soon.
               </p>
             ) : null}
           </motion.form>
@@ -205,11 +216,13 @@ export default function Contact() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 }}
-            className="flex flex-col justify-between gap-8 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 p-8 text-white shadow-lg lg:col-span-2"
+            className="flex flex-col gap-8 rounded-2xl bg-[#fff] p-8 text-black shadow-lg lg:col-span-2"
           >
             <div>
-              <h3 className="text-xl font-semibold">Contact information</h3>
-              <p className="mt-2 text-sm text-white/80">
+              <h3 className="text-xl font-semibold text-black/80">
+                Contact information
+              </h3>
+              <p className="mt-2 text-sm text-black/80">
                 Reach out through any of the channels below.
               </p>
             </div>
@@ -217,14 +230,14 @@ export default function Contact() {
             <ul className="flex flex-col gap-6">
               {CONTACT_DETAILS.map(({ icon: Icon, label, value }) => (
                 <li key={label} className="flex items-start gap-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black/15">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wider text-white/70">
+                    <p className="font-mono text-xs font-medium uppercase tracking-wider text-black/70">
                       {label}
                     </p>
-                    <p className="text-sm font-medium">{value}</p>
+                    <p className="text-sm font-medium text-black/80">{value}</p>
                   </div>
                 </li>
               ))}

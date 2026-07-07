@@ -1,11 +1,10 @@
 "use client";
 
-import { Bell, LogOut, Menu, Moon, Sun } from "lucide-react";
+import { Bell, LogOut, Menu } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useMessages } from "@/hooks/useMessages";
-import { useTheme } from "@/hooks/useTheme";
 
 const PAGE_TITLES: Record<string, string> = {
   "/admin/dashboard": "Dashboard",
@@ -24,7 +23,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { adminProfile, logout } = useAdminAuth();
-  const { theme, toggleTheme, mounted } = useTheme();
   const { messages } = useMessages();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -67,19 +65,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={toggleTheme}
-          aria-label="Toggle dark mode"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-subtle transition-colors hover:bg-surface-muted"
-        >
-          {mounted && theme === "dark" ? (
-            <Sun className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <Moon className="h-4 w-4" aria-hidden="true" />
-          )}
-        </button>
-
-        <button
-          type="button"
           aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
           onClick={() => router.push("/admin/messages")}
           className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-subtle transition-colors hover:bg-surface-muted"
@@ -99,7 +84,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
             aria-expanded={isProfileOpen}
             className="flex items-center gap-2 rounded-full border border-border-subtle py-1 pr-3 pl-1 transition-colors hover:bg-surface-muted"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-accent-500 text-xs font-semibold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-coral text-xs font-semibold text-white">
               {(adminProfile?.name ?? "A").charAt(0).toUpperCase()}
             </span>
             <span className="hidden text-sm font-medium sm:block">
@@ -120,7 +105,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-500/10 dark:text-red-400"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-500/10"
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
                 Logout

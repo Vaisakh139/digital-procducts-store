@@ -80,7 +80,7 @@ export default function DeleteDialog({
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
 
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-600">
               <AlertTriangle className="h-6 w-6" aria-hidden="true" />
             </span>
 

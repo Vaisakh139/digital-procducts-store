@@ -113,7 +113,7 @@ export default function ProductCard({
               ? `Remove ${product.title} from favorites`
               : `Add ${product.title} to favorites`
           }
-          className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white dark:bg-black/50 dark:text-white dark:hover:bg-black/70"
+          className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
         >
           <Heart
             className={`h-4 w-4 ${
@@ -161,7 +161,7 @@ export default function ProductCard({
         </div>
 
         <div className="mt-1 flex items-center justify-between">
-          <span className="text-lg font-semibold text-brand-600 dark:text-brand-400">
+          <span className="text-lg font-semibold text-brand-600">
             ${product.price.toFixed(2)}
           </span>
           <span className="text-xs text-foreground/45">
@@ -187,7 +187,7 @@ export default function ProductCard({
               event.stopPropagation();
               onPurchase(product);
             }}
-            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-brand-500 to-accent-500 text-xs font-medium text-white shadow-sm transition-all hover:shadow-md hover:brightness-110 active:scale-95"
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full bg-coral text-xs font-medium text-white shadow-sm transition-all hover:bg-coral-dark hover:shadow-md active:scale-95"
           >
             <ShoppingCart className="h-3.5 w-3.5" aria-hidden="true" />
             Purchase

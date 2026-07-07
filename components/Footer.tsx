@@ -3,6 +3,8 @@
 import { Layers } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import AdminLoginModal from "./AdminLoginModal";
 import {
   FacebookIcon,
   GithubIcon,
@@ -15,8 +17,8 @@ type ScrollLink = { label: string; type: "scroll"; id: string };
 type RouteLink = { label: string; type: "route"; href: string };
 
 const QUICK_LINKS: (ScrollLink | RouteLink)[] = [
-  { label: "Home", type: "scroll", id: "home" },
   { label: "Products", type: "route", href: "/products" },
+  { label: "How it works", type: "scroll", id: "how-it-works" },
   { label: "About", type: "scroll", id: "about" },
   { label: "Contact", type: "scroll", id: "contact" },
 ];
@@ -38,6 +40,7 @@ export default function Footer() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const year = new Date().getFullYear();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const handleScrollClick = (
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -50,19 +53,21 @@ export default function Footer() {
   };
 
   return (
-    <footer className="border-t border-border-subtle bg-surface-muted">
+    <footer className="bg-plum text-cream">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-4 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-md shadow-brand-500/30">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-coral text-white shadow-md shadow-coral/30">
                 <Layers className="h-5 w-5" aria-hidden="true" />
               </span>
-              <span className="text-lg font-semibold tracking-tight">Digiora</span>
+              <span className="font-heading text-lg font-semibold tracking-tight text-cream">
+                Elicso
+              </span>
             </Link>
-            <p className="max-w-xs text-sm leading-relaxed text-foreground/65">
-              A premium marketplace for templates, source code, UI kits, and
-              digital assets — secure payments, instant delivery.
+            <p className="max-w-xs text-sm leading-relaxed text-cream/65">
+              Trackers, templates, and tiny tools built to fix specific
+              everyday frustrations — not another generic productivity app.
             </p>
             <div className="flex items-center gap-2 pt-2">
               {SOCIAL_LINKS.map(({ label, icon: Icon, href }) => (
@@ -72,7 +77,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle text-foreground/60 transition-colors hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-cream/20 text-cream/60 transition-colors hover:border-coral hover:text-coral"
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
                 </a>
@@ -81,14 +86,14 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold">Quick Links</h3>
+            <h3 className="text-sm font-semibold text-cream">Quick Links</h3>
             <ul className="mt-4 flex flex-col gap-3">
               {QUICK_LINKS.map((link) => (
                 <li key={link.label}>
                   {link.type === "route" ? (
                     <Link
                       href={link.href}
-                      className="text-sm text-foreground/65 transition-colors hover:text-brand-600 dark:hover:text-brand-400"
+                      className="text-sm text-cream/65 transition-colors hover:text-coral"
                     >
                       {link.label}
                     </Link>
@@ -96,7 +101,7 @@ export default function Footer() {
                     <Link
                       href={`/#${link.id}`}
                       onClick={(event) => handleScrollClick(event, link.id)}
-                      className="text-sm text-foreground/65 transition-colors hover:text-brand-600 dark:hover:text-brand-400"
+                      className="text-sm text-cream/65 transition-colors hover:text-coral"
                     >
                       {link.label}
                     </Link>
@@ -107,13 +112,13 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold">Legal</h3>
+            <h3 className="text-sm font-semibold text-cream">Legal</h3>
             <ul className="mt-4 flex flex-col gap-3">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-foreground/65 transition-colors hover:text-brand-600 dark:hover:text-brand-400"
+                    className="text-sm text-cream/65 transition-colors hover:text-coral"
                   >
                     {link.label}
                   </a>
@@ -123,24 +128,32 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold">Contact</h3>
-            <ul className="mt-4 flex flex-col gap-3 text-sm text-foreground/65">
-              <li>support@digiora.com</li>
-              <li>+1 (555) 012-3456</li>
-              <li>148 Market Street, San Francisco, CA 94105</li>
+            <h3 className="text-sm font-semibold text-cream">Contact</h3>
+            <ul className="mt-4 flex flex-col gap-3 text-sm text-cream/65">
+              <li>hello@elicso.com</li>
+              <li>
+                <button type="button" onClick={() => setIsLoginOpen(true)}>
+                  Admin Login
+                </button>
+              </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center gap-4 border-t border-border-subtle pt-8 sm:flex-row sm:justify-between">
-          <p className="text-xs text-foreground/55">
-            © {year} Digiora. All rights reserved.
+        <div className="mt-12 flex flex-col items-center gap-4 border-t border-cream/10 pt-8 sm:flex-row sm:justify-between">
+          <p className="text-xs text-cream/55">
+            © {year} Elicso. All rights reserved.
           </p>
-          <p className="text-xs text-foreground/55">
-            Built for creators who ship premium digital products.
+          <p className="font-mono text-xs text-cream/55">
+            Tools that fix specific everyday frustrations.
           </p>
         </div>
       </div>
+
+      <AdminLoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+      />
     </footer>
   );
 }

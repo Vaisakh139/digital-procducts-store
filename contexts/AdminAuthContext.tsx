@@ -1,8 +1,18 @@
 "use client";
 
 import type { User } from "firebase/auth";
-import { createContext, useContext, type ReactNode } from "react";
-import { logout as logoutService } from "@/services/authService";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  fetchAdminProfile,
+  logout as logoutService,
+  onAuthChange,
+} from "@/services/authService";
 import type { AdminProfile } from "@/types/admin";
 
 interface AdminAuthContextValue {
@@ -18,11 +28,55 @@ const AdminAuthContext = createContext<AdminAuthContextValue | undefined>(
 );
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const unsubscribe = onAuthChange(async (user) => {
+      if (cancelled) return;
+
+      if (!user) {
+        setFirebaseUser(null);
+        setAdminProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      setFirebaseUser(user);
+
+      try {
+        const profile = await fetchAdminProfile(user.uid);
+        if (cancelled) return;
+
+        if (!profile) {
+          // Signed-in user has no admins/{uid} doc (or role != "admin") —
+          // not authorized, so don't leave a half-signed-in session around.
+          await logoutService();
+          setAdminProfile(null);
+        } else {
+          setAdminProfile(profile);
+        }
+      } catch {
+        if (!cancelled) setAdminProfile(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
   const value: AdminAuthContextValue = {
-    firebaseUser: null,
-    adminProfile: { uid: "qa", email: "admin@digiora.com", name: "QA Admin", role: "admin", avatarUrl: null },
-    loading: false,
-    isAdmin: true,
+    firebaseUser,
+    adminProfile,
+    loading,
+    isAdmin: Boolean(adminProfile),
     logout: logoutService,
   };
 

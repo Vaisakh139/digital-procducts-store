@@ -221,7 +221,7 @@ export default function ProductDetailsModal({
                         downloads
                       </span>
                     </div>
-                    <span className="text-2xl font-semibold text-brand-600 dark:text-brand-400">
+                    <span className="text-2xl font-semibold text-brand-600">
                       ${product.price.toFixed(2)}
                     </span>
                   </div>

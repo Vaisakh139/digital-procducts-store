@@ -103,7 +103,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         {resetSent ? (
           <p
             role="status"
-            className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-600 dark:text-emerald-400"
+            className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-600"
           >
             <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
             Check your inbox for a link to reset your password.
@@ -136,7 +136,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                   aria-describedby={
                     resetErrors.email ? "reset-email-error" : undefined
                   }
-                  className="w-full rounded-xl border border-border-subtle bg-white/60 py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:bg-black/30"
+                  className="w-full rounded-xl border border-border-subtle bg-white/60 py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
                   {...registerReset("email")}
                 />
               </div>
@@ -168,7 +168,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         <button
           type="button"
           onClick={switchToLogin}
-          className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+          className="text-sm font-medium text-brand-600 hover:underline"
         >
           Back to login
         </button>
@@ -199,7 +199,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             placeholder="you@company.com"
             aria-invalid={Boolean(loginErrors.email)}
             aria-describedby={loginErrors.email ? "admin-email-error" : undefined}
-            className="w-full rounded-xl border border-border-subtle bg-white/60 py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:bg-black/30"
+            className="w-full rounded-xl border border-border-subtle bg-white/60 py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
             {...registerLogin("email")}
           />
         </div>
@@ -218,7 +218,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           <button
             type="button"
             onClick={switchToReset}
-            className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400"
+            className="text-xs font-medium text-brand-600 hover:underline"
           >
             Forgot password?
           </button>
@@ -237,7 +237,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             aria-describedby={
               loginErrors.password ? "admin-password-error" : undefined
             }
-            className="w-full rounded-xl border border-border-subtle bg-white/60 py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:bg-black/30"
+            className="w-full rounded-xl border border-border-subtle bg-white/60 py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
             {...registerLogin("password")}
           />
         </div>

@@ -43,7 +43,7 @@ export default function SelectedProductsBar({
         >
           <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-accent-500 text-white">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-coral text-white">
                 <ShoppingBag className="h-5 w-5" aria-hidden="true" />
               </span>
               <div className="flex flex-col">
@@ -58,7 +58,7 @@ export default function SelectedProductsBar({
             </div>
 
             <div className="flex items-center justify-between gap-4 sm:justify-end">
-              <span className="text-lg font-semibold text-brand-600 dark:text-brand-400">
+              <span className="text-lg font-semibold text-brand-600">
                 ${totalPrice.toFixed(2)}
               </span>
               <div className="flex items-center gap-2">

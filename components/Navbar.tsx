@@ -13,8 +13,8 @@ type RouteLink = { label: string; type: "route"; href: string };
 type NavLink = ScrollLink | RouteLink;
 
 const NAV_LINKS: NavLink[] = [
-  { label: "Home", type: "scroll", id: "home" },
   { label: "Products", type: "route", href: "/products" },
+  { label: "How it works", type: "scroll", id: "how-it-works" },
   { label: "About", type: "scroll", id: "about" },
   { label: "Contact", type: "scroll", id: "contact" },
 ];
@@ -35,15 +35,7 @@ export default function Navbar() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [activeId, setActiveId] = useState("home");
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 12);
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     if (!isHome) return;
@@ -96,27 +88,21 @@ export default function Navbar() {
 
   return (
     <>
-      <header
-        className={`sticky top-0 z-50 w-full transition-colors duration-300 ${
-          isScrolled
-            ? "border-b border-border-subtle bg-background/70 backdrop-blur-xl"
-            : "border-b border-transparent bg-transparent"
-        }`}
-      >
+      <header className="sticky top-0 z-50 w-full bg-plum text-cream shadow-sm">
         <nav
           aria-label="Primary"
           className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8"
         >
           <Link
             href="/"
-            className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
             onClick={(event) => handleScrollLinkClick(event, "home")}
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-md shadow-brand-500/30">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-coral text-white shadow-md shadow-coral/30">
               <Layers className="h-5 w-5" aria-hidden="true" />
             </span>
-            <span className="text-lg font-semibold tracking-tight">
-              Digiora
+            <span className="font-heading text-lg font-semibold tracking-tight text-cream">
+              Elicso
             </span>
           </Link>
 
@@ -128,8 +114,8 @@ export default function Navbar() {
                   href={link.href}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     pathname === link.href
-                      ? "text-brand-600 dark:text-brand-400"
-                      : "text-foreground/70 hover:text-foreground"
+                      ? "text-coral"
+                      : "text-cream/70 hover:text-cream"
                   }`}
                 >
                   {link.label}
@@ -141,8 +127,8 @@ export default function Navbar() {
                   onClick={(event) => handleScrollLinkClick(event, link.id)}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     isHome && activeId === link.id
-                      ? "text-brand-600 dark:text-brand-400"
-                      : "text-foreground/70 hover:text-foreground"
+                      ? "text-coral"
+                      : "text-cream/70 hover:text-cream"
                   }`}
                 >
                   {link.label}
@@ -151,23 +137,23 @@ export default function Navbar() {
             )}
           </div>
 
-          <div className="hidden items-center gap-3 lg:flex">
+          {/* <div className="hidden items-center gap-3 lg:flex">
             <Button
-              variant="outline"
+              variant="primary"
               size="md"
               icon={<LogIn className="h-4 w-4" aria-hidden="true" />}
               onClick={() => setIsLoginOpen(true)}
             >
               Admin Login
             </Button>
-          </div>
+          </div> */}
 
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen((open) => !open)}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMobileMenuOpen}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-subtle text-foreground lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-cream/20 text-cream lg:hidden"
           >
             {isMobileMenuOpen ? (
               <X className="h-5 w-5" aria-hidden="true" />
@@ -184,7 +170,7 @@ export default function Navbar() {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="overflow-hidden border-t border-border-subtle bg-background/95 backdrop-blur-xl lg:hidden"
+              className="overflow-hidden border-t border-cream/10 bg-plum lg:hidden"
             >
               <div className="flex flex-col gap-1 px-6 py-4">
                 {NAV_LINKS.map((link) =>
@@ -193,7 +179,7 @@ export default function Navbar() {
                       key={link.label}
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="rounded-xl px-4 py-3 text-sm font-medium text-foreground/80 hover:bg-surface-muted"
+                      className="rounded-xl px-4 py-3 text-sm font-medium text-cream/80 hover:bg-plum-light"
                     >
                       {link.label}
                     </Link>
@@ -202,7 +188,7 @@ export default function Navbar() {
                       key={link.label}
                       href={`/#${link.id}`}
                       onClick={(event) => handleScrollLinkClick(event, link.id)}
-                      className="rounded-xl px-4 py-3 text-sm font-medium text-foreground/80 hover:bg-surface-muted"
+                      className="rounded-xl px-4 py-3 text-sm font-medium text-cream/80 hover:bg-plum-light"
                     >
                       {link.label}
                     </Link>

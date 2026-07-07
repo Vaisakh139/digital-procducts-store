@@ -136,7 +136,7 @@ export default function ProductGrid({
                 aria-current={entry === page ? "page" : undefined}
                 className={`inline-flex h-9 min-w-9 items-center justify-center rounded-full px-3 text-sm font-medium transition-colors ${
                   entry === page
-                    ? "bg-gradient-to-r from-brand-500 to-accent-500 text-white shadow-sm"
+                    ? "bg-coral text-white shadow-sm"
                     : "border border-border-subtle hover:bg-surface-muted"
                 }`}
               >
