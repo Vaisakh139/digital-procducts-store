@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import {
   CreditCard,
   DownloadCloud,
-  MailCheck,
   Search,
   type LucideIcon,
 } from "lucide-react";
@@ -19,27 +18,21 @@ interface Step {
 const STEPS: Step[] = [
   {
     icon: Search,
-    title: "Browse Products",
+    title: "Find your fix",
     description:
-      "Explore templates, source code, UI kits, and ebooks curated from top creators.",
-  },
-  {
-    icon: MailCheck,
-    title: "Verify Email",
-    description:
-      "Confirm your email with a quick OTP to keep your account safe and secure.",
+      "Browse trackers and templates built around one specific frustration — budgeting, habits, or goals.",
   },
   {
     icon: CreditCard,
-    title: "Secure Payment",
+    title: "Buy once",
     description:
-      "Checkout with confidence using encrypted, industry-standard payment processing.",
+      "Simple, secure checkout. No subscriptions, no recurring fees — pay once and it's yours.",
   },
   {
     icon: DownloadCloud,
-    title: "Instant Download",
+    title: "Start using it today",
     description:
-      "Access your purchase immediately from your dashboard — anytime, anywhere.",
+      "Get instant access to your file the moment you check out — no waiting, no extra hoops.",
   },
 ];
 
@@ -62,7 +55,7 @@ export default function HowItWorks() {
         <SectionHeading
           eyebrow="Simple process"
           title="How it works"
-          description="From browsing to downloading, get your digital products in four simple steps."
+          description="From browsing to downloading, get your tool in three simple steps."
         />
 
         <div className="relative mt-20">
@@ -71,7 +64,7 @@ export default function HowItWorks() {
             aria-hidden="true"
           />
 
-          <ol className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          <ol className="grid grid-cols-1 gap-12 sm:grid-cols-3 lg:gap-8">
             {STEPS.map((step, index) => {
               const Icon = step.icon;
               return (
@@ -87,11 +80,11 @@ export default function HowItWorks() {
                   <div className="relative z-10">
                     <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-subtle bg-surface shadow-md">
                       <Icon
-                        className="h-7 w-7 text-brand-600 dark:text-brand-400"
+                        className="h-7 w-7 text-coral-dark"
                         aria-hidden="true"
                       />
                     </span>
-                    <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-accent-500 text-xs font-semibold text-white shadow-sm">
+                    <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-coral text-xs font-semibold text-white shadow-sm">
                       {index + 1}
                     </span>
                   </div>

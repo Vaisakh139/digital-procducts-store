@@ -73,7 +73,7 @@ export default function AdminOrdersPage() {
       </p>
 
       {error ? (
-        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600">
           {error}
         </p>
       ) : null}

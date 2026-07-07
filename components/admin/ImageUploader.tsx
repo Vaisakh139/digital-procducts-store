@@ -155,7 +155,7 @@ export default function ImageUploader({
           type="button"
           onClick={handleAddClick}
           disabled={disabled}
-          className={`flex ${aspect === "video" ? "aspect-video" : "aspect-square"} w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border-subtle bg-surface text-foreground/50 transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-60 dark:hover:text-brand-400`}
+          className={`flex ${aspect === "video" ? "aspect-video" : "aspect-square"} w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border-subtle bg-surface text-foreground/50 transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-60`}
         >
           <ImagePlus className="h-6 w-6" aria-hidden="true" />
           <span className="text-xs">{label}</span>

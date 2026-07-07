@@ -60,7 +60,7 @@ export default function UploadField({
               href={value}
               target="_blank"
               rel="noopener noreferrer"
-              className="truncate text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+              className="truncate text-sm font-medium text-brand-600 hover:underline"
             >
               View uploaded file
             </a>
@@ -84,7 +84,7 @@ export default function UploadField({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={disabled || progress !== null}
-          className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border-subtle bg-surface px-4 py-4 text-sm text-foreground/60 transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-60 dark:hover:text-brand-400"
+          className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border-subtle bg-surface px-4 py-4 text-sm text-foreground/60 transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-60"
         >
           {progress !== null ? (
             <>

@@ -209,7 +209,7 @@ export default function AdminSettingsPage() {
                 type="button"
                 onClick={() => logoInputRef.current?.click()}
                 disabled={logoProgress !== null}
-                className="flex aspect-square w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border-subtle bg-surface text-foreground/50 transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-60 dark:hover:text-brand-400"
+                className="flex aspect-square w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border-subtle bg-surface text-foreground/50 transition-colors hover:border-brand-500 hover:text-brand-600 disabled:opacity-60"
               >
                 {logoProgress !== null ? (
                   <>
@@ -276,7 +276,7 @@ export default function AdminSettingsPage() {
           </p>
         ) : null}
         {successMessage ? (
-          <p role="status" className="text-sm text-emerald-600 dark:text-emerald-400">
+          <p role="status" className="text-sm text-emerald-600">
             {successMessage}
           </p>
         ) : null}

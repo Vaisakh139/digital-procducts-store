@@ -30,7 +30,7 @@ export type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-brand-500 to-accent-500 text-white shadow-lg shadow-brand-500/25 hover:shadow-xl hover:shadow-brand-500/30 hover:brightness-110",
+    "bg-coral text-white shadow-lg shadow-coral/25 hover:bg-coral-dark hover:shadow-xl hover:shadow-coral/30",
   secondary:
     "bg-surface text-foreground border border-border-subtle hover:bg-surface-muted",
   outline:
@@ -53,7 +53,7 @@ export default function Button({
 }: ButtonProps) {
   const classes = [
     "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-all duration-200 active:scale-95",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "disabled:opacity-50 disabled:pointer-events-none",
     variantClasses[variant],
     sizeClasses[size],

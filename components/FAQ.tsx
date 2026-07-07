@@ -12,9 +12,9 @@ interface FAQItem {
 
 const FAQS: FAQItem[] = [
   {
-    question: "How do I receive products?",
+    question: "How do I get my file after buying?",
     answer:
-      "Once your payment is confirmed, your product becomes available for instant download from your account dashboard, and we also email you a direct link.",
+      "Once your payment is confirmed, your file is available for instant download — no waiting on approvals, and we email you a direct link too.",
   },
   {
     question: "Is payment secure?",
@@ -27,9 +27,9 @@ const FAQS: FAQItem[] = [
       "Absolutely. Every purchase is saved to your account, so you can re-download your files anytime from your order history — no limits.",
   },
   {
-    question: "How is email verified?",
+    question: "Does this work in Excel or Google Sheets?",
     answer:
-      "We send a one-time password (OTP) to your email during sign-up. Entering the code confirms your address and helps keep your account secure.",
+      "Yes. Every tracker is delivered as a ready-to-use template — just make your own copy in Google Sheets or Excel and start entering your numbers. No new software to install.",
   },
   {
     question: "Do you offer refunds?",
@@ -39,7 +39,7 @@ const FAQS: FAQItem[] = [
   {
     question: "How do I contact support?",
     answer:
-      "Reach our team anytime through the contact form below, live chat, or email at support@digiora.com — we typically respond within a few hours.",
+      "Reach our team anytime through the contact form below or by email at hello@elicso.com — we typically respond within a day.",
   },
 ];
 
@@ -62,12 +62,12 @@ function AccordionItem({
           onClick={onToggle}
           aria-expanded={isOpen}
           aria-controls={contentId}
-          className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-inset"
+          className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-inset"
         >
           <span>{item.question}</span>
           <ChevronDown
             className={`h-5 w-5 shrink-0 text-foreground/50 transition-transform duration-300 ${
-              isOpen ? "rotate-180 text-brand-600 dark:text-brand-400" : ""
+              isOpen ? "rotate-180 text-coral" : ""
             }`}
             aria-hidden="true"
           />
@@ -103,7 +103,7 @@ export default function FAQ() {
         <SectionHeading
           eyebrow="FAQ"
           title="Frequently asked questions"
-          description="Everything you need to know about buying digital products with us."
+          description="Everything you need to know before you buy a tracker or template."
         />
 
         <div className="mt-12 flex flex-col gap-4">

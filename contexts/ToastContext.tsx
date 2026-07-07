@@ -60,8 +60,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               role="status"
               className={`pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-sm ${
                 toast.type === "success"
-                  ? "border-emerald-500/30 bg-surface text-emerald-600 dark:text-emerald-400"
-                  : "border-red-500/30 bg-surface text-red-600 dark:text-red-400"
+                  ? "border-emerald-500/30 bg-surface text-emerald-600"
+                  : "border-red-500/30 bg-surface text-red-600"
               }`}
             >
               {toast.type === "success" ? (

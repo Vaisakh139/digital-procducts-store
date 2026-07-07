@@ -14,7 +14,7 @@ import { useProducts } from "@/hooks/useProducts";
 import type { Product, ProductCategory, SortOption } from "@/types/product";
 
 const PAGE_SIZE = 8;
-const FAVORITES_STORAGE_KEY = "digiora:favorite-products";
+const FAVORITES_STORAGE_KEY = "elicso:favorite-products";
 const DEFAULT_PRICE_BOUNDS: [number, number] = [0, 500];
 
 export default function ProductsPage() {
@@ -154,9 +154,9 @@ export default function ProductsPage() {
 
   return (
     <div className="flex flex-col">
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-600 via-brand-500 to-accent-500 py-20 text-white sm:py-24">
+      <section className="relative overflow-hidden bg-[#f6e7e7] py-20 sm:py-24">
         <div
-          className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.18),transparent_45%)]"
+          className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(232,103,74,0.18),transparent_45%)]"
           aria-hidden="true"
         />
         <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-4 px-6 text-center lg:px-8">
@@ -164,27 +164,27 @@ export default function ProductsPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider backdrop-blur-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-cream/25 bg-cream/10 px-4 py-1.5 font-mono text-xs font-medium uppercase tracking-wider backdrop-blur-sm"
           >
-            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            Digital Marketplace
+            <Sparkles className="h-3.5 w-3.5 !text-black" aria-hidden="true" />
+            Tools that fix real frustrations
           </motion.span>
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl font-semibold tracking-tight text-balance sm:text-5xl"
+            className="text-3xl font-semibold tracking-tight text-balance text-cream sm:text-5xl"
           >
-            Premium Digital Products
+            Find your fix
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg"
+            className="max-w-2xl text-base text-black leading-relaxed sm:text-lg"
           >
-            Browse our high-quality digital products with instant access
-            after purchase.
+            Trackers and templates built around one specific frustration —
+            browse, buy once, and get instant access.
           </motion.p>
         </div>
       </section>
@@ -223,7 +223,7 @@ export default function ProductsPage() {
         </div>
 
         {error ? (
-          <div className="mt-8 rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm text-red-600 dark:text-red-400">
+          <div className="mt-8 rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm text-red-600">
             {error}
           </div>
         ) : null}

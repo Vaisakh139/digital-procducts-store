@@ -43,10 +43,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navContent = (
     <div className="flex h-full flex-col">
       <div className="flex h-20 items-center gap-2.5 px-6">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-md shadow-brand-500/30">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-coral text-white shadow-md shadow-coral/30">
           <Layers className="h-5 w-5" aria-hidden="true" />
         </span>
-        <span className="text-lg font-semibold tracking-tight">Digiora</span>
+        <span className="font-heading text-lg font-semibold tracking-tight">Elicso</span>
       </div>
 
       <nav aria-label="Admin" className="flex flex-1 flex-col gap-1 px-4">
@@ -77,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-500/10 dark:text-red-400"
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-500/10"
         >
           <LogOut className="h-4 w-4" aria-hidden="true" />
           Logout

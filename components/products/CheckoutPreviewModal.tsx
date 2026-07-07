@@ -258,7 +258,7 @@ export default function CheckoutPreviewModal({
                   </div>
                   <div className="mt-1 flex items-center justify-between border-t border-border-subtle pt-2 text-base font-semibold">
                     <span>Grand Total</span>
-                    <span className="text-brand-600 dark:text-brand-400">
+                    <span className="text-brand-600">
                       ${grandTotal.toFixed(2)}
                     </span>
                   </div>
@@ -267,7 +267,7 @@ export default function CheckoutPreviewModal({
                 {isConfirmed ? (
                   <p
                     role="status"
-                    className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-600 dark:text-emerald-400"
+                    className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-600"
                   >
                     <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
                     Order summary saved. Payment integration is coming soon —

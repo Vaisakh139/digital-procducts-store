@@ -10,36 +10,36 @@ interface Testimonial {
   review: string;
   rating: number;
   initials: string;
-  gradient: string;
+  avatarColor: string;
 }
 
 const TESTIMONIALS: Testimonial[] = [
   {
     name: "Sarah Mitchell",
-    role: "Frontend Developer",
+    role: "Freelance Designer",
     review:
-      "The templates saved me weeks of work. Checkout was instant and the quality is honestly unmatched for the price.",
+      "I'd tried four different budget spreadsheets before this one. It's the first where the math is actually right and I didn't have to fix a broken formula.",
     rating: 5,
     initials: "SM",
-    gradient: "from-brand-500 to-accent-500",
+    avatarColor: "bg-coral",
   },
   {
     name: "James Okafor",
-    role: "Indie Hacker",
+    role: "Small Business Owner",
     review:
-      "Found a UI kit that fit my SaaS perfectly. Support responded within minutes when I had a licensing question.",
+      "The habit tracker is stupidly simple, which is exactly why I still use it two months in. Everything else I tried got abandoned by week two.",
     rating: 5,
     initials: "JO",
-    gradient: "from-accent-500 to-brand-600",
+    avatarColor: "bg-plum",
   },
   {
     name: "Priya Sharma",
-    role: "Product Designer",
+    role: "Grad Student",
     review:
-      "Everything about this marketplace feels premium — from browsing to secure checkout to instant download.",
+      "Bought it expecting another generic template. Got something that actually auto-calculates the numbers and looks good doing it.",
     rating: 4,
     initials: "PS",
-    gradient: "from-brand-400 to-brand-700",
+    avatarColor: "bg-sage",
   },
 ];
 
@@ -62,7 +62,7 @@ export default function Testimonials() {
         <SectionHeading
           eyebrow="Loved by customers"
           title="What our customers say"
-          description="Thousands of creators and businesses trust us for their digital product needs."
+          description="People who were tired of tools that quit on them halfway through."
         />
 
         <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -75,10 +75,10 @@ export default function Testimonials() {
               whileInView="show"
               viewport={{ once: true, margin: "-60px" }}
               whileHover={{ y: -6 }}
-              className="flex flex-col gap-5 rounded-2xl border border-border-subtle bg-surface p-8 shadow-sm transition-shadow hover:shadow-xl hover:shadow-brand-500/10"
+              className="flex flex-col gap-5 rounded-2xl border border-border-subtle bg-surface p-8 shadow-sm transition-shadow hover:shadow-xl hover:shadow-coral/10"
             >
               <Quote
-                className="h-8 w-8 text-brand-500/30"
+                className="h-8 w-8 text-coral/30"
                 aria-hidden="true"
               />
 
@@ -106,7 +106,7 @@ export default function Testimonials() {
 
               <figcaption className="flex items-center gap-3 border-t border-border-subtle pt-5">
                 <span
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${testimonial.gradient} text-sm font-semibold text-white`}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${testimonial.avatarColor} text-sm font-semibold text-white`}
                   aria-hidden="true"
                 >
                   {testimonial.initials}

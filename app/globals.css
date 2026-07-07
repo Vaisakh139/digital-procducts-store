@@ -1,23 +1,35 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
-  --background: #ffffff;
-  --foreground: #0f0f14;
+  --background: #faf6f0;
+  --foreground: #2a2a2a;
   --surface: #ffffff;
-  --surface-muted: #f6f6f9;
-  --border-subtle: rgba(15, 15, 20, 0.08);
+  --surface-muted: #f0e9de;
+  --border-subtle: rgba(45, 27, 46, 0.12);
+  --heading: #2d1b2e;
 
-  --color-brand-50: #f2efff;
-  --color-brand-100: #e6e0ff;
-  --color-brand-400: #8b7bff;
-  --color-brand-500: #6d5bff;
-  --color-brand-600: #5540f5;
-  --color-brand-700: #4530d1;
+  --color-plum: #2d1b2e;
+  --color-plum-light: #4a3350;
+  --color-coral: #e8674a;
+  --color-coral-dark: #d14f31;
+  --color-cream: #faf6f0;
+  --color-cream-dim: #f0e9de;
+  --color-charcoal: #2a2a2a;
+  --color-sage: #8fa68e;
+  --color-gold: #c9a96e;
+  --color-white: #ffffff;
 
-  --color-accent-400: #22d3ee;
-  --color-accent-500: #06b6d4;
+  /* Legacy semantic aliases (brand = coral, accent = gold) so existing
+     component classNames repaint without a full class-by-class rewrite. */
+  --color-brand-50: #fbe7e1;
+  --color-brand-100: #f6cfc3;
+  --color-brand-400: #e8674a;
+  --color-brand-500: #e8674a;
+  --color-brand-600: #d14f31;
+  --color-brand-700: #a83d22;
+
+  --color-accent-400: #d9bd8e;
+  --color-accent-500: #c9a96e;
 }
 
 @theme inline {
@@ -26,6 +38,18 @@
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-border-subtle: var(--border-subtle);
+  --color-heading: var(--heading);
+
+  --color-plum: var(--color-plum);
+  --color-plum-light: var(--color-plum-light);
+  --color-coral: var(--color-coral);
+  --color-coral-dark: var(--color-coral-dark);
+  --color-cream: var(--color-cream);
+  --color-cream-dim: var(--color-cream-dim);
+  --color-charcoal: var(--color-charcoal);
+  --color-sage: var(--color-sage);
+  --color-gold: var(--color-gold);
+  --color-white: var(--color-white);
 
   --color-brand-50: var(--color-brand-50);
   --color-brand-100: var(--color-brand-100);
@@ -37,24 +61,14 @@
   --color-accent-400: var(--color-accent-400);
   --color-accent-500: var(--color-accent-500);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-space-grotesk);
+  --font-mono: var(--font-plex-mono);
 
   --animate-float-slow: float 7s ease-in-out infinite;
   --animate-float-slower: float 10s ease-in-out infinite;
   --animate-blob: blob 14s ease-in-out infinite;
   --animate-marquee: marquee 30s linear infinite;
-}
-
-.dark {
-  --background: #08080c;
-  --foreground: #f2f2f7;
-  --surface: #101015;
-  --surface-muted: #16161d;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-
-  --color-brand-50: #17152b;
-  --color-brand-100: #221f3d;
 }
 
 * {
@@ -71,8 +85,18 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading), Arial, Helvetica, sans-serif;
+  color: var(--heading);
+}
+
 ::selection {
-  background: var(--color-brand-500);
+  background: var(--color-coral);
   color: white;
 }
 
@@ -86,7 +110,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-brand-400);
+  background: var(--color-coral);
   border-radius: 9999px;
   opacity: 0.5;
 }

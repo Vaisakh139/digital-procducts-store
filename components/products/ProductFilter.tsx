@@ -44,7 +44,7 @@ export default function ProductFilter({
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex  justify-between gap-5">
       <div
         className="flex flex-wrap items-center gap-2"
         role="group"
@@ -63,13 +63,15 @@ export default function ProductFilter({
               {isActive ? (
                 <motion.span
                   layoutId="active-category-pill"
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-500 to-accent-500 shadow-sm"
+                  className="absolute inset-0 rounded-full bg-coral shadow-sm"
                   transition={{ type: "spring", duration: 0.5, bounce: 0.2 }}
                 />
               ) : null}
               <span
                 className={`relative z-10 ${
-                  isActive ? "text-white" : "text-foreground/70 hover:text-foreground"
+                  isActive
+                    ? "text-white"
+                    : "text-foreground/70 hover:text-foreground"
                 }`}
               >
                 {option}
@@ -80,55 +82,14 @@ export default function ProductFilter({
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-foreground/60">
-            Price Range
-          </span>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-foreground/40">
-                $
-              </span>
-              <input
-                type="number"
-                min={priceBounds[0]}
-                max={priceRange[1]}
-                value={priceRange[0]}
-                onChange={(event) => handleMinChange(event.target.value)}
-                aria-label="Minimum price"
-                className="h-10 w-24 rounded-full border border-border-subtle bg-surface pr-2 pl-6 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
-              />
-            </div>
-            <span className="text-sm text-foreground/40">to</span>
-            <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-foreground/40">
-                $
-              </span>
-              <input
-                type="number"
-                min={priceRange[0]}
-                max={priceBounds[1]}
-                value={priceRange[1]}
-                onChange={(event) => handleMaxChange(event.target.value)}
-                aria-label="Maximum price"
-                className="h-10 w-24 rounded-full border border-border-subtle bg-surface pr-2 pl-6 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label
-            htmlFor="product-sort"
-            className="text-xs font-medium text-foreground/60"
-          >
-            Sort By
-          </label>
+        <div className="flex gap-1.5 items-center">
           <div className="relative">
             <select
               id="product-sort"
               value={sort}
-              onChange={(event) => onSortChange(event.target.value as SortOption)}
+              onChange={(event) =>
+                onSortChange(event.target.value as SortOption)
+              }
               className="h-10 w-full min-w-[190px] appearance-none rounded-full border border-border-subtle bg-surface pr-9 pl-4 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
             >
               {SORT_OPTIONS.map((option) => (

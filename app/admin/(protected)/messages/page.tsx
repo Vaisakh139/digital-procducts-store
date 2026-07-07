@@ -26,7 +26,7 @@ export default function AdminMessagesPage() {
   }, [messages, search, statusFilter]);
 
   const handleReply = (message: ContactMessage) => {
-    const subject = encodeURIComponent("Re: Your message to Digiora");
+    const subject = encodeURIComponent("Re: Your message to Elicso");
     const body = encodeURIComponent(`Hi ${message.name},\n\n`);
     // Opens the user's mail client — an intentional imperative navigation,
     // not a render-time mutation.
@@ -70,7 +70,7 @@ export default function AdminMessagesPage() {
       </div>
 
       {error ? (
-        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600">
           {error}
         </p>
       ) : null}
@@ -134,7 +134,7 @@ export default function AdminMessagesPage() {
                     event.stopPropagation();
                     handleDelete(message.id);
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle px-4 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-500/10 dark:text-red-400"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle px-4 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-500/10"
                 >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                   Delete
