@@ -198,7 +198,7 @@ export default function Navbar() {
                     </Link>
                   ),
                 )}
-                <Button
+                {/* <Button
                   variant="primary"
                   size="md"
                   className="mt-2 w-full"
@@ -209,7 +209,7 @@ export default function Navbar() {
                   }}
                 >
                   Admin Login
-                </Button>
+                </Button> */}
               </div>
             </motion.div>
           ) : null}
