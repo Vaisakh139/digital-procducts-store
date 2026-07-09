@@ -1,10 +1,10 @@
 "use client";
 
-import { Layers } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import AdminLoginModal from "./AdminLoginModal";
+import Image from "next/image";
 import {
   FacebookIcon,
   GithubIcon,
@@ -58,12 +58,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-4 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-coral text-white shadow-md shadow-coral/30">
-                <Layers className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <span className="font-heading text-lg font-semibold tracking-tight text-cream">
-                Elicso
-              </span>
+              <div className="flex h-[25px] w-48 items-center justify-center rounded-xl text-white">
+                <Image
+                  src="/logo1.svg"
+                  alt="Logo"
+                  width={200}
+                  height={200}
+                  className="object-contain"
+                />
+              </div>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-cream/65">
               Trackers, templates, and tiny tools built to fix specific

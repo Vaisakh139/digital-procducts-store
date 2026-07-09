@@ -1,0 +1,9 @@
+<svg width="900" height="240" viewBox="0 0 900 240" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(0,40)">
+    <rect x="0" y="0" width="160" height="160" rx="40" fill="#2D1B2E"/>
+    <rect x="35" y="95" width="22.5" height="35" rx="5" fill="#FAF6F0"/>
+    <rect x="67.5" y="70" width="22.5" height="60" rx="5" fill="#FAF6F0"/>
+    <rect x="100" y="35" width="22.5" height="95" rx="5" fill="#E8674A"/>
+  </g>
+  <text x="195" y="150" font-family="'Liberation Sans', sans-serif" font-weight="700" font-size="110" fill="#2D1B2E">elic<tspan fill="#E8674A">so</tspan></text>
+</svg>
