@@ -1,12 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Layers, LogIn, Menu, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminLoginModal from "./AdminLoginModal";
 import Button from "./ui/Button";
+import Image from "next/image";
 
 type ScrollLink = { label: string; type: "scroll"; id: string };
 type RouteLink = { label: string; type: "route"; href: string };
@@ -98,12 +99,15 @@ export default function Navbar() {
             className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
             onClick={(event) => handleScrollLinkClick(event, "home")}
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-coral text-white shadow-md shadow-coral/30">
-              <Layers className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <span className="font-heading text-lg font-semibold tracking-tight text-cream">
-              Elicso
-            </span>
+            <div className="flex h-24 w-48 items-center justify-center rounded-xl text-white">
+              <Image
+                src="/logo1.svg"
+                alt="Logo"
+                width={200}
+                height={200}
+                className="object-contain"
+              />
+            </div>
           </Link>
 
           <div className="hidden items-center gap-1 lg:flex">
