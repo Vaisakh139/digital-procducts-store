@@ -1,6 +1,5 @@
 "use client";
 
-import type { User } from "firebase/auth";
 import {
   createContext,
   useContext,
@@ -8,19 +7,21 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  fetchAdminProfile,
-  logout as logoutService,
-  onAuthChange,
-} from "@/services/authService";
+import { apiFetch, decodeAuthToken, getAuthToken, setAuthToken } from "@/lib/apiClient";
 import type { AdminProfile } from "@/types/admin";
 
 interface AdminAuthContextValue {
-  firebaseUser: User | null;
   adminProfile: AdminProfile | null;
   loading: boolean;
   isAdmin: boolean;
   logout: () => Promise<void>;
+}
+
+interface AdminProfileResponse {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextValue | undefined>(
@@ -28,56 +29,60 @@ const AdminAuthContext = createContext<AdminAuthContextValue | undefined>(
 );
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
-    const unsubscribe = onAuthChange(async (user) => {
-      if (cancelled) return;
+    const token = getAuthToken();
+    const claims = token ? decodeAuthToken(token) : null;
 
-      if (!user) {
-        setFirebaseUser(null);
-        setAdminProfile(null);
-        setLoading(false);
-        return;
-      }
+    if (!claims || claims.role !== "admin") {
+      // One-time read of a token already sitting in storage at mount, not a
+      // subscription — nothing external to await before resolving.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAdminProfile(null);
+      setLoading(false);
+      return;
+    }
 
-      setFirebaseUser(user);
-
-      try {
-        const profile = await fetchAdminProfile(user.uid);
+    // The decoded claims are enough to know "this looks like an admin
+    // token", but the profile fetch is what actually confirms the token is
+    // still valid (not expired/revoked) against the backend.
+    apiFetch<AdminProfileResponse>("/admin/profile", { auth: true })
+      .then((profile) => {
         if (cancelled) return;
-
-        if (!profile) {
-          // Signed-in user has no admins/{uid} doc (or role != "admin") —
-          // not authorized, so don't leave a half-signed-in session around.
-          await logoutService();
-          setAdminProfile(null);
-        } else {
-          setAdminProfile(profile);
-        }
-      } catch {
+        setAdminProfile({
+          uid: profile.id,
+          email: profile.email,
+          name: profile.name,
+          role: "admin",
+          avatarUrl: null,
+        });
+      })
+      .catch(() => {
         if (!cancelled) setAdminProfile(null);
-      } finally {
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    });
+      });
 
     return () => {
       cancelled = true;
-      unsubscribe();
     };
   }, []);
 
+  const logout = async () => {
+    setAuthToken(null);
+    setAdminProfile(null);
+  };
+
   const value: AdminAuthContextValue = {
-    firebaseUser,
     adminProfile,
     loading,
     isAdmin: Boolean(adminProfile),
-    logout: logoutService,
+    logout,
   };
 
   return (

@@ -1,37 +1,29 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Layers, Loader2, ShieldCheck } from "lucide-react";
+import { Layers, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import LoginForm from "@/components/admin/LoginForm";
-import { useAdminAuth } from "@/contexts/AdminAuthContext";
-import { isApiConfigured } from "@/lib/apiClient";
+import { decodeAuthToken, getAuthToken, isApiConfigured } from "@/lib/apiClient";
 
-export default function AdminLoginPage() {
+export default function LoginPage() {
   const router = useRouter();
-  const { isAdmin, loading } = useAdminAuth();
 
   useEffect(() => {
-    if (!loading && isAdmin) {
-      router.replace("/admin/dashboard");
-    }
-  }, [loading, isAdmin, router]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-brand-500" aria-hidden="true" />
-      </div>
-    );
-  }
+    const token = getAuthToken();
+    const claims = token ? decodeAuthToken(token) : null;
+    if (claims?.role === "admin") router.replace("/admin/dashboard");
+    else if (claims?.role === "customer") router.replace("/account");
+  }, [router]);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-brand-50 via-background to-background px-4 py-12">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-cream px-4 py-12">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-brand-400/30 blur-3xl animate-blob" />
+        <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-coral/20 blur-3xl animate-blob" />
         <div
-          className="absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-accent-400/25 blur-3xl animate-blob"
+          className="absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-gold/20 blur-3xl animate-blob"
           style={{ animationDelay: "3s" }}
         />
       </div>
@@ -48,16 +40,10 @@ export default function AdminLoginPage() {
           </span>
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-foreground/50" aria-hidden="true" />
-            <span className="text-sm font-medium text-foreground/50">
-              Elicso Admin
-            </span>
+            <span className="text-sm font-medium text-foreground/50">Elicso</span>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Welcome back
-          </h1>
-          <p className="text-sm text-foreground/60">
-            Sign in to manage products, orders, and customers.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-foreground/60">Sign in to your account.</p>
         </div>
 
         {!isApiConfigured ? (
@@ -70,6 +56,13 @@ export default function AdminLoginPage() {
             <LoginForm />
           </div>
         )}
+
+        <p className="mt-6 text-center text-sm text-foreground/60">
+          New here?{" "}
+          <Link href="/signup" className="font-medium text-coral-dark hover:underline">
+            Create an account
+          </Link>
+        </p>
       </motion.div>
     </div>
   );

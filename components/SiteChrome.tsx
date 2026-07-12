@@ -7,9 +7,12 @@ import Navbar from "./Navbar";
 
 export default function SiteChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isAdminRoute = pathname?.startsWith("/admin") ?? false;
+  const isChromeless =
+    pathname?.startsWith("/admin") ||
+    pathname === "/login" ||
+    pathname === "/signup";
 
-  if (isAdminRoute) {
+  if (isChromeless) {
     return <>{children}</>;
   }
 

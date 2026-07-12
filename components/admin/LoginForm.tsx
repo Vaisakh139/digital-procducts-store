@@ -58,9 +58,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const onLoginSubmit = async (values: LoginValues) => {
     setFormError(null);
     try {
-      await loginWithEmail(values.email, values.password, values.remember);
+      const result = await loginWithEmail(values.email, values.password, values.remember);
       onSuccess?.();
-      router.push("/admin/dashboard");
+      router.push(result.role === "admin" ? "/admin/dashboard" : "/account");
     } catch (error) {
       setFormError(getAuthErrorMessage(error));
     }

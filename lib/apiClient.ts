@@ -2,17 +2,49 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export const isApiConfigured = Boolean(API_BASE_URL);
 
-export const ADMIN_TOKEN_STORAGE_KEY = "elicso:admin-token";
+export const AUTH_TOKEN_STORAGE_KEY = "elicso:auth-token";
 
-export function getAdminToken(): string | null {
+/** One shared session — a browser is logged in as either an admin or a customer, never both. */
+export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
+  return (
+    window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ??
+    window.sessionStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+  );
 }
 
-export function setAdminToken(token: string | null): void {
+export function setAuthToken(token: string | null, remember = true): void {
   if (typeof window === "undefined") return;
-  if (token) window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
-  else window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+  window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  window.sessionStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  if (token) {
+    (remember ? window.localStorage : window.sessionStorage).setItem(
+      AUTH_TOKEN_STORAGE_KEY,
+      token,
+    );
+  }
+}
+
+export interface AuthTokenClaims {
+  id: string;
+  email: string;
+  role: "admin" | "customer";
+}
+
+/**
+ * Reads the role/id/email claims out of a JWT for immediate UI routing
+ * decisions. Not a verification — the signature isn't checked client-side;
+ * the backend re-verifies on every protected request regardless.
+ */
+export function decodeAuthToken(token: string): AuthTokenClaims | null {
+  try {
+    const payloadSegment = token.split(".")[1];
+    if (!payloadSegment) return null;
+    const base64 = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(base64)) as AuthTokenClaims;
+  } catch {
+    return null;
+  }
 }
 
 export class ApiError extends Error {
@@ -56,7 +88,7 @@ export async function apiFetch<T>(
   if (body !== undefined) headers["Content-Type"] = "application/json";
 
   if (auth) {
-    const token = getAdminToken();
+    const token = getAuthToken();
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
