@@ -141,16 +141,16 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* <div className="hidden items-center gap-3 lg:flex">
+          <div className="hidden items-center gap-3 lg:flex">
             <Button
               variant="primary"
               size="md"
               icon={<LogIn className="h-4 w-4" aria-hidden="true" />}
               onClick={() => setIsLoginOpen(true)}
             >
-              Admin Login
+              Login
             </Button>
-          </div> */}
+          </div>
 
           <button
             type="button"
