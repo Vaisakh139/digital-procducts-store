@@ -1,28 +1,18 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  CheckCircle2,
-  ClipboardList,
-  PackageCheck,
-  PlayCircle,
-  ShoppingCart,
-  Star,
-  X,
-} from "lucide-react";
+import { ShoppingCart, Star, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Button from "@/components/ui/Button";
 import { getOptimizedImageUrl } from "@/lib/cloudinaryUrl";
-import type { Product } from "@/types/product";
+import { getDisplayPrice, type Product } from "@/types/storefront";
 
 interface ProductDetailsModalProps {
   product: Product | null;
   onClose: () => void;
   onPurchase: (product: Product) => void;
 }
-
-type ActiveMedia = { type: "image"; index: number } | { type: "video" };
 
 export default function ProductDetailsModal({
   product,
@@ -31,22 +21,21 @@ export default function ProductDetailsModal({
 }: ProductDetailsModalProps) {
   const titleId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const [activeMedia, setActiveMedia] = useState<ActiveMedia>({
-    type: "image",
-    index: 0,
-  });
+  const [activeIndex, setActiveIndex] = useState(0);
   const [syncedProductId, setSyncedProductId] = useState(product?.id);
 
   const isOpen = Boolean(product);
 
   if (product?.id !== syncedProductId) {
     setSyncedProductId(product?.id);
-    setActiveMedia({ type: "image", index: 0 });
+    setActiveIndex(0);
   }
 
   const gallery = useMemo(() => {
     if (!product) return [];
-    return [product.thumbnail, ...product.galleryImages].filter(Boolean);
+    return [product.thumbnailUrl, ...product.images.map((image) => image.url)].filter(
+      Boolean,
+    );
   }, [product]);
 
   useEffect(() => {
@@ -69,6 +58,9 @@ export default function ProductDetailsModal({
       window.clearTimeout(focusTimer);
     };
   }, [isOpen, onClose]);
+
+  const displayPrice = product ? getDisplayPrice(product) : 0;
+  const hasDiscount = product?.discountPrice !== null && product?.discountPrice !== undefined;
 
   return (
     <AnimatePresence>
@@ -110,22 +102,11 @@ export default function ProductDetailsModal({
               <div className="grid grid-cols-1 gap-8 p-6 lg:grid-cols-2 lg:p-8">
                 <div className="flex flex-col gap-3">
                   <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-surface-muted">
-                    {activeMedia.type === "video" && product.videoUrl ? (
-                      <iframe
-                        src={product.videoUrl}
-                        title={`${product.title} video preview`}
-                        className="h-full w-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    ) : gallery.length > 0 ? (
+                    {gallery.length > 0 ? (
                       <Image
-                        src={getOptimizedImageUrl(
-                          gallery[
-                            activeMedia.type === "image" ? activeMedia.index : 0
-                          ],
-                          { width: 1000 },
-                        )}
+                        src={getOptimizedImageUrl(gallery[activeIndex] ?? gallery[0], {
+                          width: 1000,
+                        })}
                         alt={product.title}
                         fill
                         sizes="(min-width: 1024px) 50vw, 100vw"
@@ -138,16 +119,15 @@ export default function ProductDetailsModal({
                     )}
                   </div>
 
-                  {gallery.length > 1 || product.videoUrl ? (
+                  {gallery.length > 1 ? (
                     <div className="flex gap-2 overflow-x-auto pb-1">
                       {gallery.map((image, index) => (
                         <button
                           key={`${image}-${index}`}
                           type="button"
-                          onClick={() => setActiveMedia({ type: "image", index })}
+                          onClick={() => setActiveIndex(index)}
                           className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-                            activeMedia.type === "image" &&
-                            activeMedia.index === index
+                            activeIndex === index
                               ? "border-brand-500"
                               : "border-transparent"
                           }`}
@@ -166,23 +146,6 @@ export default function ProductDetailsModal({
                           />
                         </button>
                       ))}
-                      {product.videoUrl ? (
-                        <button
-                          type="button"
-                          onClick={() => setActiveMedia({ type: "video" })}
-                          aria-label="Play video preview"
-                          className={`relative flex h-16 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 bg-black/80 transition-colors ${
-                            activeMedia.type === "video"
-                              ? "border-brand-500"
-                              : "border-transparent"
-                          }`}
-                        >
-                          <PlayCircle
-                            className="h-6 w-6 text-white"
-                            aria-hidden="true"
-                          />
-                        </button>
-                      ) : null}
                     </div>
                   ) : null}
                 </div>
@@ -190,7 +153,7 @@ export default function ProductDetailsModal({
                 <div className="flex flex-col gap-5">
                   <div className="flex flex-col gap-2">
                     <span className="w-fit rounded-full bg-surface-muted px-3 py-1 text-xs font-medium tracking-wide text-foreground/60 uppercase">
-                      {product.category}
+                      {product.category.name}
                     </span>
                     <h2
                       id={titleId}
@@ -217,42 +180,25 @@ export default function ProductDetailsModal({
                         ))}
                       </div>
                       <span className="text-sm text-foreground/50">
-                        {product.rating.toFixed(1)} · {product.downloads.toLocaleString()}{" "}
-                        downloads
+                        {product.rating} ·{" "}
+                        {product.downloadsCount.toLocaleString()} downloads
                       </span>
                     </div>
-                    <span className="text-2xl font-semibold text-brand-600">
-                      ${product.price.toFixed(2)}
+                    <span className="flex items-center gap-2">
+                      <span className="text-2xl font-semibold text-brand-600">
+                        ${displayPrice}
+                      </span>
+                      {hasDiscount ? (
+                        <span className="text-sm text-foreground/40 line-through">
+                          ${product.price}
+                        </span>
+                      ) : null}
                     </span>
                   </div>
 
                   <p className="text-sm leading-relaxed text-foreground/70">
-                    {product.longDescription || product.description}
+                    {product.description}
                   </p>
-
-                  {product.features.length > 0 ? (
-                    <DetailList
-                      icon={CheckCircle2}
-                      title="Features"
-                      items={product.features}
-                    />
-                  ) : null}
-
-                  {product.requirements.length > 0 ? (
-                    <DetailList
-                      icon={ClipboardList}
-                      title="Requirements"
-                      items={product.requirements}
-                    />
-                  ) : null}
-
-                  {product.whatsIncluded.length > 0 ? (
-                    <DetailList
-                      icon={PackageCheck}
-                      title="What's Included"
-                      items={product.whatsIncluded}
-                    />
-                  ) : null}
 
                   <Button
                     variant="primary"
@@ -261,7 +207,7 @@ export default function ProductDetailsModal({
                     icon={<ShoppingCart className="h-4 w-4" aria-hidden="true" />}
                     onClick={() => onPurchase(product)}
                   >
-                    Purchase — ${product.price.toFixed(2)}
+                    Purchase — ${displayPrice}
                   </Button>
                 </div>
               </div>
@@ -270,35 +216,5 @@ export default function ProductDetailsModal({
         </motion.div>
       ) : null}
     </AnimatePresence>
-  );
-}
-
-function DetailList({
-  icon: Icon,
-  title,
-  items,
-}: {
-  icon: typeof CheckCircle2;
-  title: string;
-  items: string[];
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <ul className="flex flex-col gap-1.5">
-        {items.map((item) => (
-          <li
-            key={item}
-            className="flex items-start gap-2 text-sm text-foreground/70"
-          >
-            <Icon
-              className="mt-0.5 h-4 w-4 shrink-0 text-brand-500"
-              aria-hidden="true"
-            />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }

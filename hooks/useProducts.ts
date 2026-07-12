@@ -1,42 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { isFirebaseConfigured } from "@/lib/firebase";
-import { subscribeToProducts } from "@/services/productService";
-import type { Product } from "@/types/product";
+import {
+  fetchProducts,
+  type ListProductsParams,
+} from "@/services/storefrontProductService";
+import type { PaginatedProducts } from "@/types/storefront";
 
 interface UseProductsResult {
-  products: Product[];
+  data: PaginatedProducts | null;
   loading: boolean;
   error: string | null;
 }
 
-export function useProducts(): UseProductsResult {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(isFirebaseConfigured);
-  const [error, setError] = useState<string | null>(
-    isFirebaseConfigured
-      ? null
-      : "Firebase is not configured. Add your project credentials to .env.local to load products.",
-  );
+interface ProductsState {
+  paramsKey: string;
+  data: PaginatedProducts | null;
+  error: string | null;
+}
+
+const INITIAL_STATE: ProductsState = { paramsKey: "", data: null, error: null };
+
+export function useProducts(params: ListProductsParams): UseProductsResult {
+  const [state, setState] = useState<ProductsState>(INITIAL_STATE);
+
+  // Filters are passed as a fresh object every render, so stringify them into
+  // a stable dependency instead of re-fetching on every render.
+  const paramsKey = JSON.stringify(params);
 
   useEffect(() => {
-    if (!isFirebaseConfigured) return;
+    let cancelled = false;
 
-    const unsubscribe = subscribeToProducts(
-      (data) => {
-        setProducts(data);
-        setLoading(false);
-        setError(null);
-      },
-      (err) => {
-        setError(err.message || "Failed to load products. Please try again.");
-        setLoading(false);
-      },
-    );
+    fetchProducts(params)
+      .then((result) => {
+        if (cancelled) return;
+        setState({ paramsKey, data: result, error: null });
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setState({
+          paramsKey,
+          data: null,
+          error: err instanceof Error ? err.message : "Failed to load products.",
+        });
+      });
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey]);
 
-  return { products, loading, error };
+  // While state.paramsKey hasn't caught up to the current params, a fetch for
+  // them is in flight (or about to start) — derive "loading" instead of
+  // toggling it imperatively inside the effect.
+  const loading = state.paramsKey !== paramsKey;
+
+  return { data: state.data, loading, error: state.error };
 }

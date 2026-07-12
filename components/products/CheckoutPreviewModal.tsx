@@ -7,7 +7,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
-import type { Product } from "@/types/product";
+import { getDisplayPrice, type Product } from "@/types/storefront";
 
 interface CheckoutPreviewModalProps {
   products: Product[];
@@ -74,7 +74,7 @@ export default function CheckoutPreviewModal({
     };
   }, [isOpen, onClose]);
 
-  const subtotal = products.reduce((sum, product) => sum + product.price, 0);
+  const subtotal = products.reduce((sum, product) => sum + getDisplayPrice(product), 0);
   const tax = subtotal * TAX_RATE;
   const grandTotal = subtotal + tax;
 
@@ -216,10 +216,10 @@ export default function CheckoutPreviewModal({
                   <ul className="flex max-h-48 flex-col gap-3 overflow-y-auto pr-1">
                     {products.map((product) => (
                       <li key={product.id} className="flex items-center gap-3">
-                        {product.thumbnail ? (
+                        {product.thumbnailUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={product.thumbnail}
+                            src={product.thumbnailUrl}
                             alt=""
                             aria-hidden="true"
                             className="h-12 w-12 shrink-0 rounded-lg object-cover"
@@ -232,11 +232,11 @@ export default function CheckoutPreviewModal({
                             {product.title}
                           </span>
                           <span className="text-xs text-foreground/50">
-                            {product.category}
+                            {product.category.name}
                           </span>
                         </div>
                         <span className="text-sm font-semibold">
-                          ${product.price.toFixed(2)}
+                          ${getDisplayPrice(product)}
                         </span>
                       </li>
                     ))}
@@ -250,16 +250,16 @@ export default function CheckoutPreviewModal({
                   </h3>
                   <div className="flex items-center justify-between text-sm text-foreground/70">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>${subtotal}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm text-foreground/70">
                     <span>Tax ({Math.round(TAX_RATE * 100)}%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>${tax}</span>
                   </div>
                   <div className="mt-1 flex items-center justify-between border-t border-border-subtle pt-2 text-base font-semibold">
                     <span>Grand Total</span>
                     <span className="text-brand-600">
-                      ${grandTotal.toFixed(2)}
+                      ${grandTotal}
                     </span>
                   </div>
                 </section>

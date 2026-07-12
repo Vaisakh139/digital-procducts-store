@@ -97,7 +97,7 @@ export default function AdminProductsPage() {
       key: "price",
       header: "Price",
       render: (product) => (
-        <span className="font-medium">${product.price.toFixed(2)}</span>
+        <span className="font-medium">${product.price}</span>
       ),
     },
     {

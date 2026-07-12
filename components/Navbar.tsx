@@ -143,7 +143,7 @@ export default function Navbar() {
 
           <div className="hidden items-center gap-3 lg:flex">
             <Button
-              variant="primary"
+              variant="text"
               size="md"
               icon={<LogIn className="h-4 w-4" aria-hidden="true" />}
               onClick={() => setIsLoginOpen(true)}
@@ -199,7 +199,7 @@ export default function Navbar() {
                   ),
                 )}
                 {/* <Button
-                  variant="primary"
+                  variant="text"
                   size="md"
                   className="mt-2 w-full"
                   icon={<LogIn className="h-4 w-4" aria-hidden="true" />}
@@ -208,7 +208,7 @@ export default function Navbar() {
                     setIsLoginOpen(true);
                   }}
                 >
-                  Admin Login
+                  Login
                 </Button> */}
               </div>
             </motion.div>

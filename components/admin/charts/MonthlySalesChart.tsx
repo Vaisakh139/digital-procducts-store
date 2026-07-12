@@ -50,7 +50,7 @@ export default function MonthlySalesChart({ data }: MonthlySalesChartProps) {
             width={48}
           />
           <Tooltip
-            formatter={(value) => [`$${Number(value ?? 0).toFixed(2)}`, "Revenue"]}
+            formatter={(value) => [`$${Number(value ?? 0)}`, "Revenue"]}
             contentStyle={{
               background: "var(--surface)",
               border: "1px solid var(--border-subtle)",

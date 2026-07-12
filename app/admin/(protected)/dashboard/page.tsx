@@ -54,7 +54,7 @@ export default function AdminDashboardPage() {
         />
         <DashboardCard
           label="Revenue"
-          value={`$${revenue.toFixed(2)}`}
+          value={`$${revenue}`}
           icon={DollarSign}
           accent="from-emerald-500 to-accent-500"
           index={3}
@@ -102,7 +102,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-semibold">
-                      ${order.amount.toFixed(2)}
+                      ${order.amount}
                     </span>
                     <StatusBadge status={order.status} />
                   </div>

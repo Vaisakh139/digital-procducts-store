@@ -2,7 +2,7 @@
 
 import { AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { Product } from "@/types/product";
+import type { Product } from "@/types/storefront";
 import EmptyState from "./EmptyState";
 import ProductCard from "./ProductCard";
 import SkeletonCard from "./SkeletonCard";

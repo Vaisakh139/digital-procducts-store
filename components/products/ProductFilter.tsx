@@ -2,46 +2,27 @@
 
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import {
-  PRODUCT_CATEGORIES,
-  SORT_OPTIONS,
-  type ProductCategory,
-  type SortOption,
-} from "@/types/product";
+import { SORT_OPTIONS, type Category, type SortOption } from "@/types/storefront";
 
 interface ProductFilterProps {
-  category: ProductCategory | "All";
-  onCategoryChange: (category: ProductCategory | "All") => void;
-  priceRange: [number, number];
-  onPriceRangeChange: (range: [number, number]) => void;
-  priceBounds: [number, number];
+  categories: Category[];
+  categoryId: string | "All";
+  onCategoryChange: (categoryId: string | "All") => void;
   sort: SortOption;
   onSortChange: (sort: SortOption) => void;
 }
 
-const CATEGORY_OPTIONS: (ProductCategory | "All")[] = [
-  "All",
-  ...PRODUCT_CATEGORIES,
-];
-
 export default function ProductFilter({
-  category,
+  categories,
+  categoryId,
   onCategoryChange,
-  priceRange,
-  onPriceRangeChange,
-  priceBounds,
   sort,
   onSortChange,
 }: ProductFilterProps) {
-  const handleMinChange = (raw: string) => {
-    const next = raw === "" ? priceBounds[0] : Number(raw);
-    onPriceRangeChange([Math.min(next, priceRange[1]), priceRange[1]]);
-  };
-
-  const handleMaxChange = (raw: string) => {
-    const next = raw === "" ? priceBounds[1] : Number(raw);
-    onPriceRangeChange([priceRange[0], Math.max(next, priceRange[0])]);
-  };
+  const categoryOptions: { id: string | "All"; name: string }[] = [
+    { id: "All", name: "All" },
+    ...categories.map((category) => ({ id: category.id, name: category.name })),
+  ];
 
   return (
     <div className="flex  justify-between gap-5">
@@ -50,13 +31,13 @@ export default function ProductFilter({
         role="group"
         aria-label="Filter by category"
       >
-        {CATEGORY_OPTIONS.map((option) => {
-          const isActive = option === category;
+        {categoryOptions.map((option) => {
+          const isActive = option.id === categoryId;
           return (
             <button
-              key={option}
+              key={option.id}
               type="button"
-              onClick={() => onCategoryChange(option)}
+              onClick={() => onCategoryChange(option.id)}
               aria-pressed={isActive}
               className="relative rounded-full px-4 py-2 text-sm font-medium transition-colors"
             >
@@ -74,7 +55,7 @@ export default function ProductFilter({
                     : "text-foreground/70 hover:text-foreground"
                 }`}
               >
-                {option}
+                {option.name}
               </span>
             </button>
           );

@@ -38,7 +38,7 @@ export default function AdminOrdersPage() {
       key: "amount",
       header: "Amount",
       render: (order) => (
-        <span className="font-medium">${order.amount.toFixed(2)}</span>
+        <span className="font-medium">${order.amount}</span>
       ),
     },
     {

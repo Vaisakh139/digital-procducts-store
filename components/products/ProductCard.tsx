@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Check, Eye, Heart, ShoppingCart, Star } from "lucide-react";
 import Image from "next/image";
 import { getOptimizedImageUrl } from "@/lib/cloudinaryUrl";
-import type { Product } from "@/types/product";
+import { getDisplayPrice, type Product } from "@/types/storefront";
 
 interface ProductCardProps {
   product: Product;
@@ -46,6 +46,9 @@ export default function ProductCard({
     if (selectionMode) onToggleSelect(product.id);
   };
 
+  const displayPrice = getDisplayPrice(product);
+  const hasDiscount = product.discountPrice !== null;
+
   return (
     <motion.div
       custom={index}
@@ -64,9 +67,9 @@ export default function ProductCard({
       }`}
     >
       <div className="relative aspect-video w-full overflow-hidden bg-surface-muted">
-        {product.thumbnail ? (
+        {product.thumbnailUrl ? (
           <Image
-            src={getOptimizedImageUrl(product.thumbnail, { width: 640 })}
+            src={getOptimizedImageUrl(product.thumbnailUrl, { width: 640 })}
             alt={product.title}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
@@ -126,7 +129,7 @@ export default function ProductCard({
 
       <div className="flex flex-1 flex-col gap-2 p-5">
         <span className="w-fit rounded-full bg-surface-muted px-2.5 py-1 text-[0.7rem] font-medium tracking-wide text-foreground/60 uppercase">
-          {product.category}
+          {product.category.name}
         </span>
 
         <h3 className="line-clamp-1 text-base font-semibold">
@@ -156,16 +159,23 @@ export default function ProductCard({
             ))}
           </div>
           <span className="text-xs text-foreground/50">
-            {product.rating.toFixed(1)}
+            {product.rating}
           </span>
         </div>
 
         <div className="mt-1 flex items-center justify-between">
-          <span className="text-lg font-semibold text-brand-600">
-            ${product.price.toFixed(2)}
+          <span className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-brand-600">
+              ${displayPrice}
+            </span>
+            {hasDiscount ? (
+              <span className="text-xs text-foreground/40 line-through">
+                ${product.price}
+              </span>
+            ) : null}
           </span>
           <span className="text-xs text-foreground/45">
-            {product.downloads.toLocaleString()} downloads
+            {product.downloadsCount.toLocaleString()} downloads
           </span>
         </div>
 

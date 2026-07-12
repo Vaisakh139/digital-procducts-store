@@ -71,16 +71,13 @@ export default function AdminLoginModal({
             </button>
 
             <div className="relative flex flex-col gap-6">
-              <div className="flex flex-col items-center gap-3 text-center">
+              <div className="flex items-center justify-center gap-3 text-center">
                 <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-plum text-white shadow-lg shadow-plum/30">
                   <ShieldCheck className="h-6 w-6" aria-hidden="true" />
                 </span>
                 <h2 id={titleId} className="text-2xl font-semibold tracking-tight">
-                  Admin Login
+                  Login
                 </h2>
-                <p className="text-sm text-foreground/60">
-                  Sign in to manage products, orders, and customers.
-                </p>
               </div>
 
               <LoginForm onSuccess={onClose} />

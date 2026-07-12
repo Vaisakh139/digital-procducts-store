@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ShoppingBag, X } from "lucide-react";
 import Button from "@/components/ui/Button";
-import type { Product } from "@/types/product";
+import { getDisplayPrice, type Product } from "@/types/storefront";
 
 interface SelectedProductsBarProps {
   selectionMode: boolean;
@@ -19,7 +19,7 @@ export default function SelectedProductsBar({
   onCheckout,
 }: SelectedProductsBarProps) {
   const totalPrice = selectedProducts.reduce(
-    (sum, product) => sum + product.price,
+    (sum, product) => sum + getDisplayPrice(product),
     0,
   );
 
@@ -59,7 +59,7 @@ export default function SelectedProductsBar({
 
             <div className="flex items-center justify-between gap-4 sm:justify-end">
               <span className="text-lg font-semibold text-brand-600">
-                ${totalPrice.toFixed(2)}
+                ${totalPrice}
               </span>
               <div className="flex items-center gap-2">
                 <Button
