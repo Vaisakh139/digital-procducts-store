@@ -1,18 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { listAllProducts } from "@/services/adminProductService";
-import type { Product } from "@/types/storefront";
+import { listCustomers } from "@/services/adminCustomerService";
+import type { AdminCustomer } from "@/types/adminCustomer";
 
-interface UseAdminProductsResult {
-  products: Product[];
+interface UseAdminCustomersResult {
+  customers: AdminCustomer[];
   loading: boolean;
   error: string | null;
   refresh: () => void;
 }
 
-export function useAdminProducts(): UseAdminProductsResult {
-  const [products, setProducts] = useState<Product[]>([]);
+export function useAdminCustomers(): UseAdminCustomersResult {
+  const [customers, setCustomers] = useState<AdminCustomer[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [loadedKey, setLoadedKey] = useState(-1);
@@ -22,15 +22,15 @@ export function useAdminProducts(): UseAdminProductsResult {
   useEffect(() => {
     let cancelled = false;
 
-    listAllProducts()
+    listCustomers()
       .then((data) => {
         if (cancelled) return;
-        setProducts(data);
+        setCustomers(data);
         setError(null);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load products.");
+        setError(err instanceof Error ? err.message : "Failed to load customers.");
       })
       .finally(() => {
         if (!cancelled) setLoadedKey(reloadKey);
@@ -41,5 +41,5 @@ export function useAdminProducts(): UseAdminProductsResult {
     };
   }, [reloadKey]);
 
-  return { products, loading: loadedKey !== reloadKey, error, refresh };
+  return { customers, loading: loadedKey !== reloadKey, error, refresh };
 }

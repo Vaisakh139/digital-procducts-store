@@ -8,18 +8,20 @@ import DashboardCard from "@/components/admin/DashboardCard";
 import MonthlySalesChart from "@/components/admin/charts/MonthlySalesChart";
 import ProductSalesChart from "@/components/admin/charts/ProductSalesChart";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { useAdminCustomers } from "@/hooks/useAdminCustomers";
+import { useAdminOrders } from "@/hooks/useAdminOrders";
 import { useAdminProducts } from "@/hooks/useAdminProducts";
 import { useMessages } from "@/hooks/useMessages";
-import { useOrders } from "@/hooks/useOrders";
 import {
   getMonthlySales,
   getProductSales,
   getTotalRevenue,
-} from "@/services/orderService";
+} from "@/services/adminOrderService";
 
 export default function AdminDashboardPage() {
   const { products } = useAdminProducts();
-  const { orders } = useOrders();
+  const { orders } = useAdminOrders();
+  const { customers } = useAdminCustomers();
   const { messages } = useMessages();
 
   const revenue = getTotalRevenue(orders);
@@ -28,6 +30,7 @@ export default function AdminDashboardPage() {
 
   const latestOrders = orders.slice(0, 5);
   const recentMessages = messages.slice(0, 5);
+  const recentCustomers = customers.slice(0, 5);
 
   return (
     <div className="flex flex-col gap-8">
@@ -47,14 +50,14 @@ export default function AdminDashboardPage() {
         />
         <DashboardCard
           label="Customers"
-          value="Coming soon"
+          value={customers.length.toString()}
           icon={Users}
           accent="from-brand-400 to-brand-700"
           index={2}
         />
         <DashboardCard
           label="Revenue"
-          value={`$${revenue}`}
+          value={`$${revenue.toFixed(2)}`}
           icon={DollarSign}
           accent="from-emerald-500 to-accent-500"
           index={3}
@@ -94,7 +97,7 @@ export default function AdminDashboardPage() {
                 >
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">
-                      {order.customerName || order.customerEmail}
+                      {order.customer.name || order.customer.email}
                     </span>
                     <span className="text-xs text-foreground/50">
                       {order.createdAt.toLocaleDateString()}
@@ -102,7 +105,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-semibold">
-                      ${order.amount}
+                      ${order.amount.toFixed(2)}
                     </span>
                     <StatusBadge status={order.status} />
                   </div>
@@ -143,8 +146,37 @@ export default function AdminDashboardPage() {
         </Panel>
       </div>
 
-      <Panel title="Recent Customers">
-        <EmptyPanelState message="Customer insights are coming soon." />
+      <Panel
+        title="Recent Customers"
+        action={
+          <Link
+            href="/admin/customers"
+            className="text-sm font-medium text-brand-600 hover:underline"
+          >
+            View all
+          </Link>
+        }
+      >
+        {recentCustomers.length === 0 ? (
+          <EmptyPanelState message="No customers yet." />
+        ) : (
+          <ul className="flex flex-col divide-y divide-border-subtle">
+            {recentCustomers.map((customer) => (
+              <li
+                key={customer.id}
+                className="flex items-center justify-between gap-4 py-3"
+              >
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{customer.name}</span>
+                  <span className="text-xs text-foreground/50">{customer.email}</span>
+                </div>
+                <span className="text-xs text-foreground/50">
+                  Joined {customer.createdAt.toLocaleDateString()}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </Panel>
     </div>
   );

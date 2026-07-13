@@ -2,14 +2,13 @@
 
 import { CheckCircle2, FileText, Loader2, Upload, X } from "lucide-react";
 import { useRef, useState, type ChangeEvent } from "react";
-import { sanitizeFileName, uploadFile } from "@/services/storageService";
+import { uploadDownloadFile, type UploadResult } from "@/services/adminUploadService";
 
 interface UploadFieldProps {
   label: string;
   accept: string;
-  storageFolder: string;
-  value: string | null;
-  onUploaded: (url: string) => void;
+  value: UploadResult | null;
+  onUploaded: (result: UploadResult) => void;
   onRemove: () => void;
   disabled?: boolean;
 }
@@ -17,7 +16,6 @@ interface UploadFieldProps {
 export default function UploadField({
   label,
   accept,
-  storageFolder,
   value,
   onUploaded,
   onRemove,
@@ -35,9 +33,8 @@ export default function UploadField({
     setError(null);
     setProgress(0);
     try {
-      const path = `${storageFolder}/${Date.now()}-${sanitizeFileName(file.name)}`;
-      const url = await uploadFile(path, file, setProgress);
-      onUploaded(url);
+      const result = await uploadDownloadFile(file, setProgress);
+      onUploaded(result);
     } catch {
       setError("Upload failed. Please try again.");
     } finally {
@@ -57,7 +54,7 @@ export default function UploadField({
               aria-hidden="true"
             />
             <a
-              href={value}
+              href={value.secureUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="truncate text-sm font-medium text-brand-600 hover:underline"

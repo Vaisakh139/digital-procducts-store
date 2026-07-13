@@ -8,7 +8,7 @@ import type {
 
 // Prisma's Decimal fields serialize as strings over JSON (not numbers) —
 // these three plus the two dates need converting before use.
-interface RawProduct
+export interface RawProduct
   extends Omit<Product, "price" | "discountPrice" | "rating" | "createdAt" | "updatedAt"> {
   price: string;
   discountPrice: string | null;
@@ -25,7 +25,7 @@ interface RawPaginatedProducts {
   totalPages: number;
 }
 
-function toProduct(raw: RawProduct): Product {
+export function toProduct(raw: RawProduct): Product {
   return {
     ...raw,
     price: Number(raw.price),

@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { MonthlySalesPoint } from "@/services/orderService";
+import type { MonthlySalesPoint } from "@/services/adminOrderService";
 
 interface MonthlySalesChartProps {
   data: MonthlySalesPoint[];

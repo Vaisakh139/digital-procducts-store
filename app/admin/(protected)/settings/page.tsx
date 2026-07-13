@@ -8,9 +8,14 @@ import { z } from "zod";
 import ImagePreview from "@/components/admin/ImagePreview";
 import Button from "@/components/ui/Button";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
-import { useSettings } from "@/hooks/useSettings";
-import { deleteImage, uploadImage, validateImageFile } from "@/services/cloudinaryService";
-import { updateSettings } from "@/services/settingsService";
+import { useAdminSettings } from "@/hooks/useAdminSettings";
+import {
+  deleteImage,
+  uploadImage,
+  validateImageFile,
+} from "@/services/adminUploadService";
+import { updateSettings } from "@/services/adminSettingsService";
+import type { AdminSettings } from "@/types/adminSettings";
 
 const settingsSchema = z.object({
   businessName: z.string().trim().min(2, "Business name is required."),
@@ -26,9 +31,23 @@ const settingsSchema = z.object({
 
 type SettingsValues = z.infer<typeof settingsSchema>;
 
+function toFormValues(settings: AdminSettings): SettingsValues {
+  return {
+    businessName: settings.businessName,
+    supportEmail: settings.supportEmail,
+    logoUrl: settings.logoUrl ?? "",
+    logoPublicId: settings.logoPublicId ?? "",
+    twitter: settings.twitter ?? "",
+    facebook: settings.facebook ?? "",
+    instagram: settings.instagram ?? "",
+    linkedin: settings.linkedin ?? "",
+    github: settings.github ?? "",
+  };
+}
+
 export default function AdminSettingsPage() {
   const { adminProfile } = useAdminAuth();
-  const { settings, loading } = useSettings();
+  const { settings, loading } = useAdminSettings();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [logoProgress, setLogoProgress] = useState<number | null>(null);
@@ -45,33 +64,23 @@ export default function AdminSettingsPage() {
   } = useForm<SettingsValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      businessName: settings.businessName,
-      supportEmail: settings.supportEmail,
-      logoUrl: settings.logoUrl ?? "",
-      logoPublicId: settings.logoPublicId ?? "",
-      twitter: settings.socialLinks.twitter,
-      facebook: settings.socialLinks.facebook,
-      instagram: settings.socialLinks.instagram,
-      linkedin: settings.socialLinks.linkedin,
-      github: settings.socialLinks.github,
+      businessName: "",
+      supportEmail: "",
+      logoUrl: "",
+      logoPublicId: "",
+      twitter: "",
+      facebook: "",
+      instagram: "",
+      linkedin: "",
+      github: "",
     },
   });
 
   useEffect(() => {
-    if (loading) return;
-    reset({
-      businessName: settings.businessName,
-      supportEmail: settings.supportEmail,
-      logoUrl: settings.logoUrl ?? "",
-      logoPublicId: settings.logoPublicId ?? "",
-      twitter: settings.socialLinks.twitter,
-      facebook: settings.socialLinks.facebook,
-      instagram: settings.socialLinks.instagram,
-      linkedin: settings.socialLinks.linkedin,
-      github: settings.socialLinks.github,
-    });
+    if (!settings) return;
+    reset(toFormValues(settings));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, settings]);
+  }, [settings]);
 
   const logoUrl = watch("logoUrl");
   const logoPublicId = watch("logoPublicId");
@@ -93,7 +102,7 @@ export default function AdminSettingsPage() {
 
     try {
       const result = await uploadImage(file, setLogoProgress);
-      setValue("logoUrl", result.imageUrl, { shouldValidate: true });
+      setValue("logoUrl", result.secureUrl, { shouldValidate: true });
       setValue("logoPublicId", result.publicId, { shouldValidate: true });
       if (previousPublicId) {
         deleteImage(previousPublicId).catch(() => {});
@@ -117,19 +126,18 @@ export default function AdminSettingsPage() {
     setFormError(null);
     setSuccessMessage(null);
     try {
-      await updateSettings({
+      const updated = await updateSettings({
         businessName: values.businessName,
         supportEmail: values.supportEmail,
         logoUrl: values.logoUrl || null,
         logoPublicId: values.logoPublicId || null,
-        socialLinks: {
-          twitter: values.twitter ?? "",
-          facebook: values.facebook ?? "",
-          instagram: values.instagram ?? "",
-          linkedin: values.linkedin ?? "",
-          github: values.github ?? "",
-        },
+        twitter: values.twitter || null,
+        facebook: values.facebook || null,
+        instagram: values.instagram || null,
+        linkedin: values.linkedin || null,
+        github: values.github || null,
       });
+      reset(toFormValues(updated));
       setSuccessMessage("Settings saved successfully.");
     } catch {
       setFormError("Failed to save settings. Please try again.");

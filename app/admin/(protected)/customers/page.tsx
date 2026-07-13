@@ -1,16 +1,70 @@
-import { Users } from "lucide-react";
+"use client";
+
+import DataTable, { type DataTableColumn } from "@/components/admin/DataTable";
+import { useAdminCustomers } from "@/hooks/useAdminCustomers";
+import type { AdminCustomer } from "@/types/adminCustomer";
 
 export default function AdminCustomersPage() {
+  const { customers, loading, error } = useAdminCustomers();
+
+  const columns: DataTableColumn<AdminCustomer>[] = [
+    {
+      key: "name",
+      header: "Name",
+      render: (customer) => <span className="font-medium">{customer.name}</span>,
+    },
+    {
+      key: "email",
+      header: "Email",
+      render: (customer) => <span className="text-foreground/70">{customer.email}</span>,
+    },
+    {
+      key: "phone",
+      header: "Phone",
+      render: (customer) => (
+        <span className="text-foreground/70">{customer.phone ?? "—"}</span>
+      ),
+    },
+    {
+      key: "orders",
+      header: "Orders",
+      render: (customer) => (
+        <span className="text-foreground/70">{customer._count.orders}</span>
+      ),
+    },
+    {
+      key: "joined",
+      header: "Joined",
+      render: (customer) => (
+        <span className="text-foreground/70">{customer.createdAt.toLocaleDateString()}</span>
+      ),
+    },
+  ];
+
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border-subtle bg-surface px-6 py-20 text-center">
-      <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-surface-muted">
-        <Users className="h-8 w-8 text-foreground/40" aria-hidden="true" />
-      </span>
-      <h2 className="text-lg font-semibold">Customer insights coming soon</h2>
-      <p className="max-w-sm text-sm text-foreground/60">
-        Once checkout and orders are wired up, customer profiles, purchase
-        history, and lifetime value will show up here automatically.
+    <div className="flex flex-col gap-6">
+      <p className="text-sm text-foreground/60">
+        Everyone who has checked out or created an account.
       </p>
+
+      {error ? (
+        <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
+
+      <DataTable
+        data={customers}
+        columns={columns}
+        getRowId={(customer) => customer.id}
+        isLoading={loading}
+        searchPlaceholder="Search customers..."
+        searchFn={(customer, term) =>
+          customer.name.toLowerCase().includes(term) ||
+          customer.email.toLowerCase().includes(term)
+        }
+        emptyMessage="No customers yet."
+      />
     </div>
   );
 }

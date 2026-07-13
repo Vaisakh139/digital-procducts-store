@@ -3,25 +3,27 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
 import { useToast } from "@/contexts/ToastContext";
+import { useCategories } from "@/hooks/useCategories";
 import {
   createProduct,
-  generateProductId,
   updateProduct,
-} from "@/services/productService";
-import { deleteMultipleImages, uploadImage } from "@/services/cloudinaryService";
+  type ProductImageInput,
+} from "@/services/adminProductService";
 import {
-  PRODUCT_CATEGORIES,
-  PRODUCT_STATUSES,
-  type Product,
-  type ProductInput,
-} from "@/types/product";
+  deleteMultipleImages,
+  uploadImage,
+  type UploadResult,
+} from "@/services/adminUploadService";
+import type { Product, ProductStatus } from "@/types/storefront";
 import ImageUploader, { revokeSlot, type ImageSlot } from "./ImageUploader";
 import UploadField from "./UploadField";
+
+const PRODUCT_STATUSES: ProductStatus[] = ["DRAFT", "PUBLISHED"];
 
 const productFormSchema = z.object({
   title: z.string().trim().min(3, "Title must be at least 3 characters."),
@@ -29,49 +31,28 @@ const productFormSchema = z.object({
     .string()
     .trim()
     .min(10, "Short description must be at least 10 characters.")
-    .max(200, "Keep the short description under 200 characters."),
-  longDescription: z.string().trim().optional(),
+    .max(500, "Keep the description under 500 characters."),
   price: z.number().positive("Price must be greater than 0."),
-  category: z.enum(PRODUCT_CATEGORIES),
-  videoUrl: z.union([
-    z.string().trim().url("Enter a valid video URL."),
-    z.literal(""),
-  ]),
-  downloadFile: z.string().optional(),
+  discountPrice: z
+    .string()
+    .optional()
+    .refine((value) => !value || Number(value) > 0, "Enter a valid discount price."),
+  categoryId: z.string().min(1, "Category is required."),
   isFeatured: z.boolean(),
-  status: z.enum(PRODUCT_STATUSES),
-  featuresText: z.string().optional(),
-  requirementsText: z.string().optional(),
-  whatsIncludedText: z.string().optional(),
+  status: z.enum(["DRAFT", "PUBLISHED"]),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
-function linesToArray(text: string | undefined): string[] {
-  return (text ?? "")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-function arrayToLines(items: string[]): string {
-  return items.join("\n");
-}
-
-function emptyValues(): ProductFormValues {
+function emptyValues(defaultCategoryId: string): ProductFormValues {
   return {
     title: "",
     description: "",
-    longDescription: "",
     price: 0,
-    category: PRODUCT_CATEGORIES[0],
-    videoUrl: "",
-    downloadFile: "",
+    discountPrice: "",
+    categoryId: defaultCategoryId,
     isFeatured: false,
-    status: "draft",
-    featuresText: "",
-    requirementsText: "",
-    whatsIncludedText: "",
+    status: "DRAFT",
   };
 }
 
@@ -88,28 +69,37 @@ function clearProgress(slot: ImageSlot): ImageSlot {
 }
 
 function thumbnailToSlots(product: Product | null | undefined): ImageSlot[] {
-  if (!product?.thumbnail || !product.thumbnailPublicId) return [];
-  return [{ kind: "existing", url: product.thumbnail, publicId: product.thumbnailPublicId }];
+  if (!product?.thumbnailUrl || !product.thumbnailPublicId) return [];
+  return [
+    { kind: "existing", url: product.thumbnailUrl, publicId: product.thumbnailPublicId },
+  ];
 }
 
 function galleryToSlots(product: Product | null | undefined): ImageSlot[] {
   if (!product) return [];
-  return product.galleryImages.map((url, index) => ({
+  return product.images.map((image) => ({
     kind: "existing" as const,
-    url,
-    publicId: product.galleryPublicIds[index] ?? "",
+    url: image.url,
+    publicId: image.publicId,
   }));
+}
+
+function downloadFileFromProduct(product: Product | null | undefined): UploadResult | null {
+  if (!product) return null;
+  return { secureUrl: product.downloadUrl, publicId: product.downloadPublicId };
 }
 
 interface ProductFormProps {
   isOpen: boolean;
   onClose: () => void;
+  onSaved: () => void;
   product?: Product | null;
 }
 
 export default function ProductForm({
   isOpen,
   onClose,
+  onSaved,
   product,
 }: ProductFormProps) {
   const titleId = useId();
@@ -118,24 +108,26 @@ export default function ProductForm({
   const [formError, setFormError] = useState<string | null>(null);
   const [thumbnailSlots, setThumbnailSlots] = useState<ImageSlot[]>([]);
   const [gallerySlots, setGallerySlots] = useState<ImageSlot[]>([]);
+  const [downloadFile, setDownloadFile] = useState<UploadResult | null>(null);
   const { showToast } = useToast();
-
-  const productId = useMemo(
-    () => product?.id ?? generateProductId(),
-    [product],
-  );
+  const { categories } = useCategories();
 
   const {
     register,
     handleSubmit,
     reset,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
-    defaultValues: emptyValues(),
+    defaultValues: emptyValues(""),
   });
+
+  const handleClose = () => {
+    if (isSubmitting) return;
+    thumbnailSlots.forEach(revokeSlot);
+    gallerySlots.forEach(revokeSlot);
+    onClose();
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -144,26 +136,23 @@ export default function ProductForm({
       reset({
         title: product.title,
         description: product.description,
-        longDescription: product.longDescription,
         price: product.price,
-        category: product.category,
-        videoUrl: product.videoUrl ?? "",
-        downloadFile: product.downloadFile ?? "",
+        discountPrice: product.discountPrice ? String(product.discountPrice) : "",
+        categoryId: product.categoryId,
         isFeatured: product.isFeatured,
         status: product.status,
-        featuresText: arrayToLines(product.features),
-        requirementsText: arrayToLines(product.requirements),
-        whatsIncludedText: arrayToLines(product.whatsIncluded),
       });
     } else {
-      reset(emptyValues());
+      reset(emptyValues(categories[0]?.id ?? ""));
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDownloadFile(downloadFileFromProduct(product));
     setThumbnailSlots(thumbnailToSlots(product));
     setGallerySlots(galleryToSlots(product));
     setFormError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, product]);
+  }, [isOpen, product, categories]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -184,36 +173,37 @@ export default function ProductForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const downloadFile = watch("downloadFile");
-
-  const handleClose = () => {
-    if (isSubmitting) return;
-    thumbnailSlots.forEach(revokeSlot);
-    gallerySlots.forEach(revokeSlot);
-    onClose();
-  };
-
   const onSubmit = async (values: ProductFormValues) => {
     setFormError(null);
+
+    const thumbSlot = thumbnailSlots[0];
+    if (!thumbSlot) {
+      setFormError("A thumbnail image is required.");
+      return;
+    }
+    if (!downloadFile) {
+      setFormError("A download file is required.");
+      return;
+    }
+
     const newlyUploadedPublicIds: string[] = [];
-    let firestoreWriteSucceeded = false;
+    let writeSucceeded = false;
 
     try {
-      let thumbnailUrl = "";
-      let thumbnailPublicId: string | null = null;
-      const thumbSlot = thumbnailSlots[0];
+      let thumbnailUrl: string;
+      let thumbnailPublicId: string;
 
-      if (thumbSlot?.kind === "existing") {
+      if (thumbSlot.kind === "existing") {
         thumbnailUrl = thumbSlot.url;
         thumbnailPublicId = thumbSlot.publicId;
-      } else if (thumbSlot?.kind === "pending") {
+      } else {
         try {
           const result = await uploadImage(thumbSlot.file, (percent) => {
             setThumbnailSlots((prev) =>
               prev.map((slot, index) => (index === 0 ? withProgress(slot, percent) : slot)),
             );
           });
-          thumbnailUrl = result.imageUrl;
+          thumbnailUrl = result.secureUrl;
           thumbnailPublicId = result.publicId;
           newlyUploadedPublicIds.push(result.publicId);
           setThumbnailSlots((prev) =>
@@ -229,15 +219,13 @@ export default function ProductForm({
         }
       }
 
-      const galleryUrls: string[] = [];
-      const galleryPublicIdsResolved: string[] = [];
+      const images: ProductImageInput[] = [];
 
       for (let index = 0; index < gallerySlots.length; index++) {
         const slot = gallerySlots[index];
 
         if (slot.kind === "existing") {
-          galleryUrls.push(slot.url);
-          galleryPublicIdsResolved.push(slot.publicId);
+          images.push({ url: slot.url, publicId: slot.publicId });
           continue;
         }
 
@@ -247,8 +235,7 @@ export default function ProductForm({
               prev.map((s, i) => (i === index ? withProgress(s, percent) : s)),
             );
           });
-          galleryUrls.push(result.imageUrl);
-          galleryPublicIdsResolved.push(result.publicId);
+          images.push({ url: result.secureUrl, publicId: result.publicId });
           newlyUploadedPublicIds.push(result.publicId);
           setGallerySlots((prev) =>
             prev.map((s, i) => (i === index ? clearProgress(s) : s)),
@@ -263,32 +250,28 @@ export default function ProductForm({
         }
       }
 
-      const input: ProductInput = {
+      const input = {
         title: values.title,
         description: values.description,
-        longDescription: values.longDescription || "",
         price: values.price,
-        category: values.category,
-        thumbnail: thumbnailUrl,
-        thumbnailPublicId,
-        galleryImages: galleryUrls,
-        galleryPublicIds: galleryPublicIdsResolved,
-        videoUrl: values.videoUrl || null,
-        downloadFile: values.downloadFile || null,
+        discountPrice: values.discountPrice ? Number(values.discountPrice) : undefined,
+        categoryId: values.categoryId,
         isFeatured: values.isFeatured,
         status: values.status,
-        features: linesToArray(values.featuresText),
-        requirements: linesToArray(values.requirementsText),
-        whatsIncluded: linesToArray(values.whatsIncludedText),
+        thumbnailUrl,
+        thumbnailPublicId,
+        downloadUrl: downloadFile.secureUrl,
+        downloadPublicId: downloadFile.publicId,
+        images,
       };
 
       try {
-        if (isEditMode) {
-          await updateProduct(productId, input);
+        if (isEditMode && product) {
+          await updateProduct(product.id, input);
         } else {
-          await createProduct(productId, input);
+          await createProduct(input);
         }
-        firestoreWriteSucceeded = true;
+        writeSucceeded = true;
       } catch {
         throw new Error(
           "Something went wrong while saving the product. Please try again.",
@@ -296,19 +279,12 @@ export default function ProductForm({
       }
 
       if (isEditMode && product) {
-        const keptPublicIds = new Set([
-          ...(thumbnailPublicId ? [thumbnailPublicId] : []),
-          ...galleryPublicIdsResolved,
-        ]);
-        const originalPublicIds = [
-          ...(product.thumbnailPublicId ? [product.thumbnailPublicId] : []),
-          ...product.galleryPublicIds,
-        ];
-        const removedPublicIds = originalPublicIds.filter(
-          (id) => !keptPublicIds.has(id),
-        );
-        if (removedPublicIds.length > 0) {
-          await deleteMultipleImages(removedPublicIds);
+        const keptImagePublicIds = new Set(images.map((image) => image.publicId));
+        const removedImagePublicIds = product.images
+          .map((image) => image.publicId)
+          .filter((id) => !keptImagePublicIds.has(id));
+        if (removedImagePublicIds.length > 0) {
+          await deleteMultipleImages(removedImagePublicIds);
         }
       }
 
@@ -318,9 +294,9 @@ export default function ProductForm({
       );
       thumbnailSlots.forEach(revokeSlot);
       gallerySlots.forEach(revokeSlot);
-      onClose();
+      onSaved();
     } catch (error) {
-      if (!firestoreWriteSucceeded && newlyUploadedPublicIds.length > 0) {
+      if (!writeSucceeded && newlyUploadedPublicIds.length > 0) {
         await deleteMultipleImages(newlyUploadedPublicIds);
       }
       const message =
@@ -389,29 +365,13 @@ export default function ProductForm({
                       />
                     </Field>
 
-                    <Field
-                      label="Short Description"
-                      error={errors.description?.message}
-                    >
+                    <Field label="Description" error={errors.description?.message}>
                       <textarea
                         {...register("description")}
                         disabled={isSubmitting}
-                        rows={2}
-                        className={inputClass}
-                        placeholder="One or two sentences shown on the product card."
-                      />
-                    </Field>
-
-                    <Field
-                      label="Long Description (optional)"
-                      error={errors.longDescription?.message}
-                    >
-                      <textarea
-                        {...register("longDescription")}
-                        disabled={isSubmitting}
                         rows={4}
                         className={inputClass}
-                        placeholder="Full description shown in the product details modal."
+                        placeholder="Full description shown on the product page."
                       />
                     </Field>
 
@@ -426,77 +386,46 @@ export default function ProductForm({
                           className={inputClass}
                         />
                       </Field>
-                      <Field label="Category" error={errors.category?.message}>
-                        <select
-                          {...register("category")}
+                      <Field
+                        label="Discount Price (optional)"
+                        error={errors.discountPrice?.message}
+                      >
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
                           disabled={isSubmitting}
+                          {...register("discountPrice")}
                           className={inputClass}
-                        >
-                          {PRODUCT_CATEGORIES.map((category) => (
-                            <option key={category} value={category}>
-                              {category}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </Field>
                     </div>
 
-                    <Field
-                      label="Video URL (optional)"
-                      error={errors.videoUrl?.message}
-                    >
-                      <input
-                        {...register("videoUrl")}
+                    <Field label="Category" error={errors.categoryId?.message}>
+                      <select
+                        {...register("categoryId")}
                         disabled={isSubmitting}
                         className={inputClass}
-                        placeholder="https://www.youtube.com/embed/..."
-                      />
+                      >
+                        {categories.length === 0 ? (
+                          <option value="">No categories available</option>
+                        ) : null}
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
                     </Field>
 
                     <UploadField
                       label="Download File (ZIP / PDF)"
                       accept=".zip,.pdf"
-                      storageFolder={`products/${productId}/download`}
-                      value={downloadFile || null}
+                      value={downloadFile}
                       disabled={isSubmitting}
-                      onUploaded={(url) =>
-                        setValue("downloadFile", url, { shouldValidate: true })
-                      }
-                      onRemove={() =>
-                        setValue("downloadFile", "", { shouldValidate: true })
-                      }
+                      onUploaded={(result) => setDownloadFile(result)}
+                      onRemove={() => setDownloadFile(null)}
                     />
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <Field label="Features (one per line)">
-                        <textarea
-                          {...register("featuresText")}
-                          disabled={isSubmitting}
-                          rows={3}
-                          className={inputClass}
-                          placeholder={"Responsive layout\nDark mode support"}
-                        />
-                      </Field>
-                      <Field label="Requirements (one per line)">
-                        <textarea
-                          {...register("requirementsText")}
-                          disabled={isSubmitting}
-                          rows={3}
-                          className={inputClass}
-                          placeholder={"Node.js 18+"}
-                        />
-                      </Field>
-                    </div>
-
-                    <Field label="What's Included (one per line)">
-                      <textarea
-                        {...register("whatsIncludedText")}
-                        disabled={isSubmitting}
-                        rows={3}
-                        className={inputClass}
-                        placeholder={"Source files\nDocumentation"}
-                      />
-                    </Field>
 
                     <div className="flex flex-wrap items-center gap-6">
                       <label className="flex items-center gap-2 text-sm font-medium">
@@ -525,7 +454,7 @@ export default function ProductForm({
                   </div>
 
                   <div className="flex flex-col gap-5">
-                    <Field label="Thumbnail (optional)">
+                    <Field label="Thumbnail">
                       <ImageUploader
                         mode="single"
                         aspect="video"

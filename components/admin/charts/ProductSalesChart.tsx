@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { ProductSalesPoint } from "@/services/orderService";
+import type { ProductSalesPoint } from "@/services/adminOrderService";
 
 interface ProductSalesChartProps {
   data: ProductSalesPoint[];

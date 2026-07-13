@@ -8,29 +8,25 @@ import ProductForm from "@/components/admin/ProductForm";
 import StatusBadge from "@/components/admin/StatusBadge";
 import Button from "@/components/ui/Button";
 import { useAdminProducts } from "@/hooks/useAdminProducts";
-import { deleteProduct } from "@/services/productService";
-import {
-  PRODUCT_CATEGORIES,
-  PRODUCT_STATUSES,
-  type Product,
-  type ProductCategory,
-  type ProductStatus,
-} from "@/types/product";
+import { useCategories } from "@/hooks/useCategories";
+import { deleteProduct } from "@/services/adminProductService";
+import { getDisplayPrice, type Product, type ProductStatus } from "@/types/storefront";
+
+const PRODUCT_STATUSES: ProductStatus[] = ["DRAFT", "PUBLISHED"];
 
 export default function AdminProductsPage() {
-  const { products, loading, error } = useAdminProducts();
+  const { products, loading, error, refresh } = useAdminProducts();
+  const { categories } = useCategories();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<ProductCategory | "All">(
-    "All",
-  );
+  const [categoryFilter, setCategoryFilter] = useState<string | "All">("All");
   const [statusFilter, setStatusFilter] = useState<ProductStatus | "All">("All");
 
   const filtered = products.filter((product) => {
     const matchesCategory =
-      categoryFilter === "All" || product.category === categoryFilter;
+      categoryFilter === "All" || product.categoryId === categoryFilter;
     const matchesStatus = statusFilter === "All" || product.status === statusFilter;
     return matchesCategory && matchesStatus;
   });
@@ -45,12 +41,18 @@ export default function AdminProductsPage() {
     setIsFormOpen(true);
   };
 
+  const handleSaved = () => {
+    setIsFormOpen(false);
+    refresh();
+  };
+
   const handleDeleteConfirm = async () => {
     if (!deletingProduct) return;
     setIsDeleting(true);
     try {
-      await deleteProduct(deletingProduct);
+      await deleteProduct(deletingProduct.id);
       setDeletingProduct(null);
+      refresh();
     } finally {
       setIsDeleting(false);
     }
@@ -61,10 +63,10 @@ export default function AdminProductsPage() {
       key: "image",
       header: "Image",
       render: (product) =>
-        product.thumbnail ? (
+        product.thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={product.thumbnail}
+            src={product.thumbnailUrl}
             alt=""
             className="h-12 w-16 rounded-lg object-cover"
           />
@@ -79,9 +81,7 @@ export default function AdminProductsPage() {
         <div className="flex flex-col">
           <span className="font-medium">{product.title}</span>
           {product.isFeatured ? (
-            <span className="text-xs text-brand-600">
-              Featured
-            </span>
+            <span className="text-xs text-brand-600">Featured</span>
           ) : null}
         </div>
       ),
@@ -90,14 +90,14 @@ export default function AdminProductsPage() {
       key: "category",
       header: "Category",
       render: (product) => (
-        <span className="text-foreground/70">{product.category}</span>
+        <span className="text-foreground/70">{product.category.name}</span>
       ),
     },
     {
       key: "price",
       header: "Price",
       render: (product) => (
-        <span className="font-medium">${product.price}</span>
+        <span className="font-medium">${getDisplayPrice(product).toFixed(2)}</span>
       ),
     },
     {
@@ -110,7 +110,7 @@ export default function AdminProductsPage() {
       header: "Downloads",
       render: (product) => (
         <span className="text-foreground/70">
-          {product.downloads.toLocaleString()}
+          {product.downloadsCount.toLocaleString()}
         </span>
       ),
     },
@@ -170,22 +170,20 @@ export default function AdminProductsPage() {
         searchPlaceholder="Search products..."
         searchFn={(product, term) =>
           product.title.toLowerCase().includes(term) ||
-          product.category.toLowerCase().includes(term)
+          product.category.name.toLowerCase().includes(term)
         }
         emptyMessage="No products found."
         filters={
           <>
             <select
               value={categoryFilter}
-              onChange={(event) =>
-                setCategoryFilter(event.target.value as ProductCategory | "All")
-              }
+              onChange={(event) => setCategoryFilter(event.target.value)}
               className="h-10 rounded-full border border-border-subtle bg-surface px-4 text-sm outline-none focus:border-brand-500"
             >
               <option value="All">All Categories</option>
-              {PRODUCT_CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
                 </option>
               ))}
             </select>
@@ -210,6 +208,7 @@ export default function AdminProductsPage() {
       <ProductForm
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
+        onSaved={handleSaved}
         product={editingProduct}
       />
 

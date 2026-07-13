@@ -1,9 +1,11 @@
 const STATUS_STYLES: Record<string, string> = {
   active: "bg-emerald-500/10 text-emerald-600",
+  published: "bg-emerald-500/10 text-emerald-600",
   draft: "bg-amber-500/10 text-amber-600",
   pending: "bg-amber-500/10 text-amber-600",
   paid: "bg-blue-500/10 text-blue-600",
   fulfilled: "bg-emerald-500/10 text-emerald-600",
+  failed: "bg-red-500/10 text-red-600",
   cancelled: "bg-red-500/10 text-red-600",
   refunded: "bg-foreground/10 text-foreground/60",
   unread: "bg-brand-500/10 text-brand-600",
@@ -17,7 +19,7 @@ interface StatusBadgeProps {
 }
 
 export default function StatusBadge({ status, className = "" }: StatusBadgeProps) {
-  const styles = STATUS_STYLES[status] ?? "bg-surface-muted text-foreground/60";
+  const styles = STATUS_STYLES[status.toLowerCase()] ?? "bg-surface-muted text-foreground/60";
 
   return (
     <span
