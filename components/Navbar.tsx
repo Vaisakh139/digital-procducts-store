@@ -1,13 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { LogIn, Menu, X } from "lucide-react";
+import { LogIn, LogOut, Menu, UserPlus, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import AdminLoginModal from "./AdminLoginModal";
 import Button from "./ui/Button";
 import Image from "next/image";
+import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 
 type ScrollLink = { label: string; type: "scroll"; id: string };
 type RouteLink = { label: string; type: "route"; href: string };
@@ -32,11 +32,18 @@ const OBSERVED_SECTION_IDS = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const isHome = pathname === "/";
+  const { isCustomer, logout } = useCustomerAuth();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activeId, setActiveId] = useState("home");
+
+  const handleLogout = () => {
+    logout();
+    setIsMobileMenuOpen(false);
+    router.push("/");
+  };
 
   useEffect(() => {
     if (!isHome) return;
@@ -87,6 +94,11 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   };
 
+  // Logged-in customers see a stripped-down nav: just Products + Logout.
+  const visibleLinks = isCustomer
+    ? NAV_LINKS.filter((link) => link.label === "Products")
+    : NAV_LINKS;
+
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-plum text-cream shadow-sm">
@@ -111,7 +123,7 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden items-center gap-1 lg:flex">
-            {NAV_LINKS.map((link) =>
+            {visibleLinks.map((link) =>
               link.type === "route" ? (
                 <Link
                   key={link.label}
@@ -142,14 +154,35 @@ export default function Navbar() {
           </div>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <Button
-              variant="text"
-              size="md"
-              icon={<LogIn className="h-4 w-4" aria-hidden="true" />}
-              onClick={() => setIsLoginOpen(true)}
-            >
-              Login
-            </Button>
+            {isCustomer ? (
+              <Button
+                variant="text"
+                size="md"
+                icon={<LogOut className="h-4 w-4" aria-hidden="true" />}
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="text"
+                  size="md"
+                  href="/signup"
+                  icon={<UserPlus className="h-4 w-4" aria-hidden="true" />}
+                >
+                  Sign Up
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  href="/login"
+                  icon={<LogIn className="h-4 w-4" aria-hidden="true" />}
+                >
+                  Login
+                </Button>
+              </>
+            )}
           </div>
 
           <button
@@ -177,7 +210,7 @@ export default function Navbar() {
               className="overflow-hidden border-t border-cream/10 bg-plum lg:hidden"
             >
               <div className="flex flex-col gap-1 px-6 py-4">
-                {NAV_LINKS.map((link) =>
+                {visibleLinks.map((link) =>
                   link.type === "route" ? (
                     <Link
                       key={link.label}
@@ -198,28 +231,45 @@ export default function Navbar() {
                     </Link>
                   ),
                 )}
-                {/* <Button
-                  variant="text"
-                  size="md"
-                  className="mt-2 w-full"
-                  icon={<LogIn className="h-4 w-4" aria-hidden="true" />}
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    setIsLoginOpen(true);
-                  }}
-                >
-                  Login
-                </Button> */}
+                {isCustomer ? (
+                  <Button
+                    variant="text"
+                    size="md"
+                    className="mt-2 w-full"
+                    icon={<LogOut className="h-4 w-4" aria-hidden="true" />}
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="text"
+                      size="md"
+                      className="mt-2 w-full"
+                      href="/signup"
+                      icon={<UserPlus className="h-4 w-4" aria-hidden="true" />}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="md"
+                      className="w-full"
+                      href="/login"
+                      icon={<LogIn className="h-4 w-4" aria-hidden="true" />}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Login
+                    </Button>
+                  </>
+                )}
               </div>
             </motion.div>
           ) : null}
         </AnimatePresence>
       </header>
-
-      <AdminLoginModal
-        isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
-      />
     </>
   );
 }

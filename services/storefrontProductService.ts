@@ -6,7 +6,13 @@ import type {
   ProductFilters,
 } from "@/types/storefront";
 
-interface RawProduct extends Omit<Product, "createdAt" | "updatedAt"> {
+// Prisma's Decimal fields serialize as strings over JSON (not numbers) —
+// these three plus the two dates need converting before use.
+interface RawProduct
+  extends Omit<Product, "price" | "discountPrice" | "rating" | "createdAt" | "updatedAt"> {
+  price: string;
+  discountPrice: string | null;
+  rating: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,6 +28,9 @@ interface RawPaginatedProducts {
 function toProduct(raw: RawProduct): Product {
   return {
     ...raw,
+    price: Number(raw.price),
+    discountPrice: raw.discountPrice !== null ? Number(raw.discountPrice) : null,
+    rating: Number(raw.rating),
     createdAt: new Date(raw.createdAt),
     updatedAt: new Date(raw.updatedAt),
   };

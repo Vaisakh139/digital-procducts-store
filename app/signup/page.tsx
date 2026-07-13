@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Layers, Lock, Mail, ShieldCheck, User } from "lucide-react";
+import { Layers, Lock, Mail, Phone, ShieldCheck, User, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -10,6 +10,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
 import { isApiConfigured } from "@/lib/apiClient";
+import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import { getAuthErrorMessage } from "@/services/authService";
 import { signup } from "@/services/customerService";
 
@@ -17,6 +19,7 @@ const signupSchema = z
   .object({
     name: z.string().trim().min(2, "Name must be at least 2 characters."),
     email: z.string().trim().email("Enter a valid email address."),
+    phone: z.string().trim().optional(),
     password: z.string().min(8, "Password must be at least 8 characters."),
     confirmPassword: z.string().min(1, "Please confirm your password."),
   })
@@ -32,6 +35,8 @@ const inputClasses =
 
 export default function SignupPage() {
   const router = useRouter();
+  const { showToast } = useToast();
+  const { refreshProfile } = useCustomerAuth();
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -40,7 +45,7 @@ export default function SignupPage() {
     formState: { errors, isSubmitting },
   } = useForm<SignupValues>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
+    defaultValues: { name: "", email: "", phone: "", password: "", confirmPassword: "" },
   });
 
   const onSubmit = async (values: SignupValues) => {
@@ -49,11 +54,16 @@ export default function SignupPage() {
       await signup({
         name: values.name,
         email: values.email,
+        phone: values.phone || undefined,
         password: values.password,
       });
+      showToast("success", "Account created successfully.");
+      await refreshProfile();
       router.push("/account");
     } catch (error) {
-      setFormError(getAuthErrorMessage(error));
+      const message = getAuthErrorMessage(error);
+      setFormError(message);
+      showToast("error", message);
     }
   };
 
@@ -73,6 +83,14 @@ export default function SignupPage() {
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="relative w-full max-w-md rounded-3xl border border-border-subtle bg-surface p-8 shadow-2xl"
       >
+        <Link
+          href="/"
+          aria-label="Close and return home"
+          className="absolute top-5 right-5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle bg-surface/60 text-foreground/70 transition-colors hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </Link>
+
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-plum text-white shadow-lg shadow-plum/30">
             <ShieldCheck className="h-6 w-6" aria-hidden="true" />
@@ -137,6 +155,28 @@ export default function SignupPage() {
                 />
               </div>
               {errors.email ? <p className="text-xs text-red-500">{errors.email.message}</p> : null}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="signup-phone" className="text-sm font-medium text-foreground/80">
+                Phone (optional)
+              </label>
+              <div className="relative">
+                <Phone
+                  className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-foreground/40"
+                  aria-hidden="true"
+                />
+                <input
+                  id="signup-phone"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="+1 555 000 0000"
+                  aria-invalid={Boolean(errors.phone)}
+                  className={inputClasses}
+                  {...register("phone")}
+                />
+              </div>
+              {errors.phone ? <p className="text-xs text-red-500">{errors.phone.message}</p> : null}
             </div>
 
             <div className="flex flex-col gap-1.5">

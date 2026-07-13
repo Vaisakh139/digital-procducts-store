@@ -3,9 +3,10 @@
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
-import { CustomerAuthProvider, useCustomerAuth } from "@/contexts/CustomerAuthContext";
+import AccountSidebar from "@/components/account/AccountSidebar";
+import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 
-function ProtectedAccountArea({ children }: { children: ReactNode }) {
+export default function AccountLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { isCustomer, loading } = useCustomerAuth();
 
@@ -17,19 +18,16 @@ function ProtectedAccountArea({ children }: { children: ReactNode }) {
 
   if (loading || !isCustomer) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-[60vh] items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-brand-500" aria-hidden="true" />
       </div>
     );
   }
 
-  return <>{children}</>;
-}
-
-export default function AccountLayout({ children }: { children: ReactNode }) {
   return (
-    <CustomerAuthProvider>
-      <ProtectedAccountArea>{children}</ProtectedAccountArea>
-    </CustomerAuthProvider>
+    <div className="flex flex-col bg-background lg:flex-row">
+      <AccountSidebar />
+      <div className="flex-1">{children}</div>
+    </div>
   );
 }

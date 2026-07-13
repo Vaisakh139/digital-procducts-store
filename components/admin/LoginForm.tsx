@@ -7,6 +7,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
+import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import {
   getAuthErrorMessage,
   loginWithEmail,
@@ -33,6 +35,8 @@ interface LoginFormProps {
 
 export default function LoginForm({ onSuccess }: LoginFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
+  const { refreshProfile } = useCustomerAuth();
   const [mode, setMode] = useState<"login" | "reset">("login");
   const [formError, setFormError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
@@ -59,10 +63,22 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setFormError(null);
     try {
       const result = await loginWithEmail(values.email, values.password, values.remember);
+      showToast("success", "Logged in successfully.");
       onSuccess?.();
-      router.push(result.role === "admin" ? "/admin/dashboard" : "/account");
+
+      if (result.role === "admin") {
+        // AdminAuthProvider only lives inside /admin, not on this page, so
+        // there's no in-tree context to refresh — a full navigation mounts
+        // it fresh with the token that's now in storage.
+        window.location.href = "/admin/dashboard";
+      } else {
+        await refreshProfile();
+        router.push("/account");
+      }
     } catch (error) {
-      setFormError(getAuthErrorMessage(error));
+      const message = getAuthErrorMessage(error);
+      setFormError(message);
+      showToast("error", message);
     }
   };
 
@@ -71,8 +87,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     try {
       await sendPasswordReset(values.email);
       setResetSent(true);
+      showToast("success", "Reset link sent — check your inbox.");
     } catch (error) {
-      setFormError(getAuthErrorMessage(error));
+      const message = getAuthErrorMessage(error);
+      setFormError(message);
+      showToast("error", message);
     }
   };
 

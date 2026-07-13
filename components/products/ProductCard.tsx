@@ -159,18 +159,18 @@ export default function ProductCard({
             ))}
           </div>
           <span className="text-xs text-foreground/50">
-            {product.rating}
+            {product.rating.toFixed(1)}
           </span>
         </div>
 
         <div className="mt-1 flex items-center justify-between">
           <span className="flex items-center gap-2">
             <span className="text-lg font-semibold text-brand-600">
-              ${displayPrice}
+              ${displayPrice.toFixed(2)}
             </span>
             {hasDiscount ? (
               <span className="text-xs text-foreground/40 line-through">
-                ${product.price}
+                ${product.price.toFixed(2)}
               </span>
             ) : null}
           </span>

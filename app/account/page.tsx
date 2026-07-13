@@ -1,13 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, LogOut, Mail, Phone, User } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { CheckCircle2, Mail, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Button from "@/components/ui/Button";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import { changeMyPassword, updateMyProfile } from "@/services/customerService";
 import { getAuthErrorMessage } from "@/services/authService";
 
@@ -35,8 +35,8 @@ const inputClasses =
   "w-full rounded-xl border border-border-subtle bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-coral focus:ring-2 focus:ring-coral/30 disabled:cursor-not-allowed disabled:opacity-60";
 
 export default function AccountPage() {
-  const router = useRouter();
-  const { customerProfile, refreshProfile, logout } = useCustomerAuth();
+  const { showToast } = useToast();
+  const { customerProfile, refreshProfile } = useCustomerAuth();
 
   const [profileSuccess, setProfileSuccess] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -72,8 +72,11 @@ export default function AccountPage() {
       await updateMyProfile(values);
       await refreshProfile();
       setProfileSuccess(true);
+      showToast("success", "Profile updated.");
     } catch (error) {
-      setProfileError(getAuthErrorMessage(error));
+      const message = getAuthErrorMessage(error);
+      setProfileError(message);
+      showToast("error", message);
     }
   };
 
@@ -84,33 +87,21 @@ export default function AccountPage() {
       await changeMyPassword(values);
       setPasswordSuccess(true);
       resetPasswordForm();
+      showToast("success", "Password updated.");
     } catch (error) {
-      setPasswordError(getAuthErrorMessage(error));
+      const message = getAuthErrorMessage(error);
+      setPasswordError(message);
+      showToast("error", message);
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
   };
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-10 px-6 py-16 lg:px-8 lg:py-24">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Account settings</h1>
-          <p className="mt-1 text-sm text-foreground/60">
-            Manage your profile and password.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="md"
-          icon={<LogOut className="h-4 w-4" aria-hidden="true" />}
-          onClick={handleLogout}
-        >
-          Log out
-        </Button>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Account settings</h1>
+        <p className="mt-1 text-sm text-foreground/60">
+          Manage your profile and password.
+        </p>
       </div>
 
       <form

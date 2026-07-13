@@ -16,11 +16,15 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
+  // The dashboard keeps the top navbar (for Products/Logout) but drops the
+  // marketing footer — it doesn't belong below account/purchase management.
+  const hideFooter = pathname?.startsWith("/account");
+
   return (
     <>
       <Navbar />
       <main className="flex-1">{children}</main>
-      <Footer />
+      {hideFooter ? null : <Footer />}
     </>
   );
 }

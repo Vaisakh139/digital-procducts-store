@@ -59,7 +59,7 @@ export default function SelectedProductsBar({
 
             <div className="flex items-center justify-between gap-4 sm:justify-end">
               <span className="text-lg font-semibold text-brand-600">
-                ${totalPrice}
+                ${totalPrice.toFixed(2)}
               </span>
               <div className="flex items-center gap-2">
                 <Button

@@ -180,17 +180,17 @@ export default function ProductDetailsModal({
                         ))}
                       </div>
                       <span className="text-sm text-foreground/50">
-                        {product.rating} ·{" "}
+                        {product.rating.toFixed(1)} ·{" "}
                         {product.downloadsCount.toLocaleString()} downloads
                       </span>
                     </div>
                     <span className="flex items-center gap-2">
                       <span className="text-2xl font-semibold text-brand-600">
-                        ${displayPrice}
+                        ${displayPrice.toFixed(2)}
                       </span>
                       {hasDiscount ? (
                         <span className="text-sm text-foreground/40 line-through">
-                          ${product.price}
+                          ${product.price.toFixed(2)}
                         </span>
                       ) : null}
                     </span>
@@ -207,7 +207,7 @@ export default function ProductDetailsModal({
                     icon={<ShoppingCart className="h-4 w-4" aria-hidden="true" />}
                     onClick={() => onPurchase(product)}
                   >
-                    Purchase — ${displayPrice}
+                    Purchase — ${displayPrice.toFixed(2)}
                   </Button>
                 </div>
               </div>

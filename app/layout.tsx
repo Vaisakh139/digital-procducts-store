@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
 import SiteChrome from "@/components/SiteChrome";
+import { CustomerAuthProvider } from "@/contexts/CustomerAuthContext";
+import { ToastProvider } from "@/contexts/ToastContext";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -38,7 +40,11 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <SiteChrome>{children}</SiteChrome>
+        <ToastProvider>
+          <CustomerAuthProvider>
+            <SiteChrome>{children}</SiteChrome>
+          </CustomerAuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

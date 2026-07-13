@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Layers, ShieldCheck } from "lucide-react";
+import { Layers, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -34,6 +34,14 @@ export default function LoginPage() {
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="relative w-full max-w-md rounded-3xl border border-border-subtle bg-surface p-8 shadow-2xl"
       >
+        <Link
+          href="/"
+          aria-label="Close and return home"
+          className="absolute top-5 right-5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-subtle bg-surface/60 text-foreground/70 transition-colors hover:bg-surface-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </Link>
+
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-plum text-white shadow-lg shadow-plum/30">
             <ShieldCheck className="h-6 w-6" aria-hidden="true" />
