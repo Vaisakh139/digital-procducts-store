@@ -104,9 +104,12 @@ export default function ProductDetailsModal({
                   <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-surface-muted">
                     {gallery.length > 0 ? (
                       <Image
-                        src={getOptimizedImageUrl(gallery[activeIndex] ?? gallery[0], {
-                          width: 1000,
-                        })}
+                        src={getOptimizedImageUrl(
+                          gallery[activeIndex] ?? gallery[0],
+                          {
+                            width: 1000,
+                          },
+                        )}
                         alt={product.title}
                         fill
                         sizes="(min-width: 1024px) 50vw, 100vw"
@@ -114,7 +117,10 @@ export default function ProductDetailsModal({
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-foreground/30">
-                        <ShoppingCart className="h-12 w-12" aria-hidden="true" />
+                        <ShoppingCart
+                          className="h-12 w-12"
+                          aria-hidden="true"
+                        />
                       </div>
                     )}
                   </div>
@@ -201,13 +207,17 @@ export default function ProductDetailsModal({
                   </p>
 
                   <Button
+                    disabled={true}
                     variant="primary"
                     size="lg"
-                    className="mt-2 w-full"
-                    icon={<ShoppingCart className="h-4 w-4" aria-hidden="true" />}
+                    className="mt-2 w-full disabled:opacity-50"
+                    icon={
+                      <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+                    }
                     onClick={() => onPurchase(product)}
                   >
-                    Purchase — ${displayPrice.toFixed(2)}
+                    {/* Purchase — ${displayPrice.toFixed(2)} */}
+                    coming soon...
                   </Button>
                 </div>
               </div>
