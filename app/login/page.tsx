@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Layers, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import LoginForm from "@/components/admin/LoginForm";
+import Image from "next/image";
 import { decodeAuthToken, getAuthToken, isApiConfigured } from "@/lib/apiClient";
 
 export default function LoginPage() {
@@ -42,16 +42,14 @@ export default function LoginPage() {
           <X className="h-4 w-4" aria-hidden="true" />
         </Link>
 
-        <div className="flex flex-col items-center gap-3 text-center">
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-plum text-white shadow-lg shadow-plum/30">
-            <ShieldCheck className="h-6 w-6" aria-hidden="true" />
-          </span>
-          <div className="flex items-center gap-2">
-            <Layers className="h-4 w-4 text-foreground/50" aria-hidden="true" />
-            <span className="text-sm font-medium text-foreground/50">Elicso</span>
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-          <p className="text-sm text-foreground/60">Sign in to your account.</p>
+        <div className="">
+              <Image
+                src="/logo1.svg"  
+                alt="Logo"
+                width={150}   
+                height={150}
+                className="object-contain"
+              />
         </div>
 
         {!isApiConfigured ? (

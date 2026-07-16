@@ -45,7 +45,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/admin");
+    router.push("/");
   };
 
   return (

@@ -31,10 +31,8 @@ type GuestInfoValues = z.infer<typeof guestInfoSchema>;
 
 type CheckoutStatus = "idle" | "processing" | "success" | "error";
 
-// No tax model exists on the backend yet — this is an honest $0 placeholder
-// so the line item is visible (per "GST if applicable") without charging
-// anything the backend won't actually collect.
-const GST_RATE = 0;
+// 18% GST calculation applied server-side and client-side
+const GST_RATE = 0.18;
 
 export default function CheckoutPreviewModal({
   products,

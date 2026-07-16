@@ -192,17 +192,16 @@ export default function ProductCard({
             View Details
           </button>
           <button
-            disabled = {true}
             type="button"
             onClick={(event) => {
               event.stopPropagation();
               onPurchase(product);
             }}
-            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full bg-coral text-xs font-medium text-white shadow-sm transition-all hover:bg-coral-dark hover:shadow-md active:scale-95 disabled:opacity-50"
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full bg-coral text-xs font-medium text-white shadow-sm transition-all hover:bg-coral-dark hover:shadow-md active:scale-95"
           >
             <ShoppingCart className="h-3.5 w-3.5" aria-hidden="true" />
-            {/* Purchase */}
-            coming soon...
+            Purchase
+            {/* coming soon... */}
           </button>
         </div>
       </div>

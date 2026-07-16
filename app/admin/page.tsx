@@ -48,16 +48,8 @@ export default function AdminLoginPage() {
           </span>
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-foreground/50" aria-hidden="true" />
-            <span className="text-sm font-medium text-foreground/50">
-              Elicso Admin
-            </span>
+
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Welcome back
-          </h1>
-          <p className="text-sm text-foreground/60">
-            Sign in to manage products, orders, and customers.
-          </p>
         </div>
 
         {!isApiConfigured ? (

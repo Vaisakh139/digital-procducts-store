@@ -174,7 +174,7 @@ export default function Navbar() {
                   Sign Up
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="text"
                   size="md"
                   href="/login"
                   icon={<LogIn className="h-4 w-4" aria-hidden="true" />}

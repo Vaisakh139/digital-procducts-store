@@ -207,17 +207,16 @@ export default function ProductDetailsModal({
                   </p>
 
                   <Button
-                    disabled={true}
                     variant="primary"
                     size="lg"
-                    className="mt-2 w-full disabled:opacity-50"
+                    className="mt-2 w-full"
                     icon={
                       <ShoppingCart className="h-4 w-4" aria-hidden="true" />
                     }
                     onClick={() => onPurchase(product)}
                   >
-                    {/* Purchase — ${displayPrice.toFixed(2)} */}
-                    coming soon...
+                    Purchase — ${displayPrice.toFixed(2)}
+                    {/* coming soon... */}
                   </Button>
                 </div>
               </div>
