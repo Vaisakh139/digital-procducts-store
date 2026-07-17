@@ -17,7 +17,7 @@ import type { Product, SortOption } from "@/types/storefront";
 
 const PAGE_SIZE = 8;
 const FAVORITES_STORAGE_KEY = "elicso:favorite-products";
-const DEFAULT_PRICE_BOUNDS: [number, number] = [0, 500];
+const DEFAULT_PRICE_BOUNDS: [number, number] = [0, 0];
 
 export default function ProductsPage() {
   const { categories } = useCategories();
@@ -73,7 +73,7 @@ export default function ProductsPage() {
     search: debouncedSearch || undefined,
     categoryId: categoryId === "All" ? undefined : categoryId,
     minPrice: priceRange[0],
-    maxPrice: priceRange[1],
+    // maxPrice: priceRange[1],
     sort,
     page,
     limit: PAGE_SIZE,
