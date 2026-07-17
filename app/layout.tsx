@@ -23,7 +23,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Elicso — Tools That Fix Specific Everyday Frustrations",
+  title: "Elicso",
   description:
     "Elicso builds trackers, templates, and tiny tools that actually work — no manual math, no abandoned spreadsheets, no generic productivity fluff.",
 };
