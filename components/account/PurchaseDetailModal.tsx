@@ -142,7 +142,8 @@ export default function PurchaseDetailModal({
 
                 {purchase.status === "PAID" ? (
                   <a
-                    href={purchase.product.downloadUrl}
+                    // href={purchase.product.downloadUrl}
+                    href='/'
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-coral text-sm font-medium text-white shadow-sm transition-colors hover:bg-coral-dark"
